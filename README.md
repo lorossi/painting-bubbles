@@ -1,3 +1,3 @@
 # Painting Bubbles
 
-[Try it](https://lorossi.github.io/painting-bubbles/)
+[Try it](https://lorenzoros.si/painting-bubbles/)
