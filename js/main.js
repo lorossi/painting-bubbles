@@ -10,7 +10,7 @@ let paths_index = 0;
 let mobile = false;
 
 // images names and dir
-const dir = "/assets/paintings/";
+const dir = "../assets/paintings/";
 const names = ["american-gothic.jpg", "composition-8.jpg", "der -wanderer-uber-dem-nebelmeer.jpg", "gioconda.jpg", "great-wave.jpg", "napoleon-crossing-the-alps.jpg", "persistence-of-memory.jpg", "rebel-with-many-causes.jpg", "starry-night.jpg", "the-kiss.jpg", "the-son-of-men.jpg"];
 
 let main = async () => {
@@ -201,7 +201,7 @@ class Circle {
     this._just_split = true;
     this._age_count = 0;
     // how many times you have to move the mouse on the screen before the circle gets popped
-    this._split_age = 1;
+    this._split_age = 15;
 
     if (!split_direction) {
       // it's the first cirtcle, we have to set the direction of its split
@@ -211,7 +211,7 @@ class Circle {
         this._split_direction = "vertical";
       }
       // since it's the first circle, we set its age to a very low value
-      this._split_age = 1;
+      this._split_age = 50;
     } else {
       this._split_direction = split_direction;
     }
