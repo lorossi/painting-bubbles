@@ -10,7 +10,7 @@ let paths_index = 0;
 let mobile = false;
 
 // images names and dir
-const dir = "../assets/paintings/";
+const dir = "/assets/paintings/";
 const names = ["american-gothic.jpg", "composition-8.jpg", "der -wanderer-uber-dem-nebelmeer.jpg", "gioconda.jpg", "great-wave.jpg", "napoleon-crossing-the-alps.jpg", "persistence-of-memory.jpg", "rebel-with-many-causes.jpg", "starry-night.jpg", "the-kiss.jpg", "the-son-of-men.jpg"];
 
 let main = async () => {
