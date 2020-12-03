@@ -1,268 +1,139 @@
 /* jshint esversion: 8 */
+let sketch, sketch_id;
+// make this true to start recording
+let recording = false;
+// make this true to go automatically
+let auto = false;
+// current path
+let paths_index = 0;
+// are we on mobile?
+let mobile = false;
 
-class Circle {
-  constructor(x, y, width, height, color, split_direction) {
-    this.x = x;
-    this.y = y;
-    this.width = width;
-    this.height = height;
-    this.cx = this.x + this.width / 2; // center x coord
-    this.cy = this.y + this.height / 2; // center x coord
-    this.r = Math.min(this.width, this.height) / 2; // radius
-    this._color = color;
-    this._split_direction = split_direction || "horizontal";
+// images names and dir
+const dir = "/assets/paintings/";
+const names = ["gioconda.jpg", "great-wave.jpg", "starry-night.jpg", "the-kiss.jpg", "the-son-of-men.jpg"];
 
-    this.min_radius = 5;
-    this._min_size = this.r > this.min_radius;
-
-    this._just_split = true;
-    this._age_count = 0;
-    // how many times you have to move the mouse on the screen before the circle gets popped
-    this._split_age = this.r * .75;
-}
-
-  get pos() {
-    return {
-      "x": this.x,
-      "y": this.y,
-      "cx": this.cx,
-      "cy": this.cy,
-      "r": this.r,
-      "width": this.width,
-      "height": this.height
-    };
+let main = async () => {
+  if (sketch) {
+    sketch = null;
   }
 
-  get color() {
-    // r g b array to rgb string
-    let color_string = "#";
-    for (let i = 0; i < this._color.length; i++) {
-      let channel;
-      channel = this._color[i];
-      if (channel > 255) {
-        channel = 255;
-      }
-      color_string += Math.floor(channel).toString(16).padStart(2, '0');
-    }
-    return color_string;
+  let canvas_size, img_path;
+  canvas_size = get_canvas_size();
+  resize_canvas(canvas_size);
+
+  img_path = dir + names[paths_index];
+
+  let pixels;
+  pixels = await load_pixels(img_path, canvas_size);
+
+
+
+  let canvas, ctx;
+  canvas = document.getElementById(sketch_id);
+  if (canvas.getContext) {
+    ctx = canvas.getContext("2d", {alpha: false});
+    sketch = new Sketch(canvas, ctx, pixels.width, pixels.height);
+    sketch.pixels = pixels.data;
+    sketch.run();
+  }
+};
+
+get_canvas_size = () => {
+  let canvas_size;
+  if ($(document).width() >= 900 && $(document).height() >= 900) {
+    canvas_size = 900;
+  } else if ($(document).width() >= 600 && $(document).height() >= 600) {
+    canvas_size = 600;
+  } else {
+    canvas_size = 300;
   }
 
-  get split_direction() {
-    return this._split_direction;
+  if (getCssProperty("--mobile") == 1) {
+    mobile = true;
+  } else {
+    mobile = false;
   }
 
-  get just_split() {
-    return this._just_split;
+  return canvas_size;
+};
+
+resize_canvas = (size) => {
+  // resize canvas
+  $(`canvas#${sketch_id}`).prop({
+    "width": size,
+    "height": size,
+  });
+};
+
+
+$(document).ready(() => {
+  sketch_id = "sketch";
+  main();
+});
+
+$(window).resize(() => {
+  get_canvas_size();
+  resize_canvas();
+  if (sketch) {
+    sketch.resized();
   }
+});
 
-  set just_split(bool) {
-    if (this._age_count > this._split_age) {
-      this._just_split = bool;
-      this._age_count = 0;
-    } else {
-        this._age_count++;
-    }
-  }
-
-  get min_size() {
-    return this._min_size;
-  }
-
-}
-
-
-class Sketch {
-  constructor(canvas, context, source_width, source_height) {
-    this.canvas = canvas;
-    this.ctx = context;
-    this.width = canvas.width;
-    this.height = canvas.height;
-    this._source_width = source_width;
-    this._source_height = source_height;
-
-    this.mouse_x = 0;
-    this.mouse_y = 0;
-
-    // pixels container
-    this._pixels = [];
-    // rects container
-    this._circles = [];
-
-    // displacement
-    this.dx = Math.floor((this.width - this._source_width) / 2);
-    this.dy = Math.floor((this.height - this._source_height) / 2);
-
-    // save canvas in memory
-    this.savedData = new Image();
-  }
-
-  run() {
-    // run once
-    this.setup();
-    // anti alias
-    this.ctx.imageSmoothingQuality = "high";
-    // run often
-    this.draw();
-  }
-
-  save() {
-    this.savedData.src = this.canvas.toDataURL("image/png");
-  }
-
-  restore() {
-    this.ctx.drawImage(this.savedData, 0, 0);
-  }
-
-  resized() {
-    this.width = this.canvas.width;
-    this.height = this.canvas.height;
-  }
-
-  splitCircle(x, y) {
-    if (x === this.mouse_x && y === this.mouse_y) {
-      return;
-    }
-    this.mouse_x = x;
-    this.mouse_y = y;
-
-    let found, pos, i, just_split;
-
-    found = false;
-    for (i = 0; i < this._circles.length; i++) {
-      pos = this._circles[i].pos;
-      if (x >= pos.x && y >= pos.y && x <= pos.x + pos.width && y <= pos.y + pos.height && !pos.min_size) {
-        just_split = this._circles[i].just_split;
-        if (just_split) {
-          this._circles[i].just_split = false;
-          break;
-        }
-        found = true;
-        break;
-      }
-    }
-
-    if (found) {
-      // at least one has been found
-      let split_direction, next_split_direction;
-      split_direction = this._circles[i].split_direction;
-      if (split_direction === "horizontal") {
-        next_split_direction = "vertical";
-      } else if (split_direction === "vertical"){
-        next_split_direction = "horizontal";
-      }
-
-      // remove old circle
-      this._circles.splice(i, 1);
-
-      // new position and size
-      let nx, ny, nwidth, nheight;
-      for (i = 0; i < 2; i++) {
-        if (split_direction === "horizontal") {
-          nx = pos.x;
-          ny = pos.y + pos.height / 2 * i;
-          nwidth = pos.width;
-          nheight = pos.height / 2;
-        }  else if (split_direction === "vertical"){
-          nx = pos.x + pos.width / 2 * i;
-          ny = pos.y;
-          nwidth = pos.width / 2;
-          nheight = pos.height;
-        }
-        let average_color = this.averageColor(nx - this.dx, ny - this.dy, nwidth, nheight, true);
-        let new_rect = new Circle(nx, ny, nwidth, nheight, average_color, next_split_direction);
-        this._circles.push(new_rect);
-      }
+$(document).mousemove((e) => {
+  if (e.target.id === sketch_id && !auto) {
+    if (sketch) {
+      sketch.mouseMoved(e.offsetX, e.offsetY);
     }
   }
+});
 
-  setup() {
-    this.background = getCssProperty("--background-color");
+
+// key controls
+// right arrow -> next image
+// left arrow -> previous image
+// spacebar -> reset image
+// enter -> toggle auto/manual mode
+// r -> go to random painting
+$(document).keydown((e) => {
+  console.log(e);
+  console.log(e.which);
+
+  if (e.which === 37) {
+    // key arrow left
+    next_image(-1);
+  } else if (e.which === 39)  {
+    // key arrow right
+    next_image(1);
+  } else if (e.which === 32) {
+    // key spacebar
+    next_image(0);
+  } else if (e.which === 13) {
+    // key enter
+    auto = !auto;
+  } else if (e.which === 82) {
+    // key R
+    let random_dir;
+    random_dir = Math.round(Math.random() * 10000);
+    next_image(random_dir);
+  }
+});
+
+// loads next image in path
+// dir = none, 1 -> next
+// dir = -1 -> previous
+// dir = 0 -> rest
+let next_image = (dir) => {
+  sketch.ended = true;
+
+  if (dir === undefined) {
+    dir = 1;
   }
 
-  draw() {
-    // if circle is empty, it's time to generate a new circle
-    if (this._circles.length === 0) {
-      let average_color = this.averageSource();
-      let new_rect = new Circle(this.dx, this.dy, this.width - this.dx * 2, this.height - this.dy * 2, average_color);
-      this._circles.push(new_rect);
-      this.background = new_rect.color;
-      setCssProperty("--background-color", this.background);
-    }
+  paths_index = (paths_index + dir) % names.length;
 
-    this.ctx.save();
-
-    // reset canvas
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    // set background
-    this.ctx.fillStyle = this.background;
-    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-
-    // draw rects
-    this._circles.forEach((r, i) => {
-      let rect_pos;
-      rect_pos = r.pos;
-      this.ctx.fillStyle = r.color;
-      //this.ctx.fillRect(rect_pos.x, rect_pos.y, rect_pos.width, rect_pos.height)
-      this.ctx.beginPath();
-      this.ctx.arc(rect_pos.cx, rect_pos.cy, rect_pos.r, 0, 2 * Math.PI);
-      this.ctx.fill();
-    });
-
-
-    this.ctx.restore();
-    window.requestAnimationFrame(this.draw.bind(this));
-  }
-
-  getPixel(x, y) {
-    let index, pixel;
-    index = y * this._source_width * 4 + x * 4;
-    pixel = [];
-    for (let i = 0; i < 4; i++) {
-      pixel.push(this._pixels[index+i]);
-    }
-    return pixel;
-  }
-
-  averageColor(x0, y0, width, height) {
-    // make all parameters integer
-    x0 = Math.round(x0);
-    y0 = Math.round(y0);
-    width = Math.round(width);
-    height = Math.round(height);
-    // current rectangle size
-    let rect_size;
-    rect_size = width * height;
-    // sum of all pixels in circle, current pixel
-    let rect_pixels, current_pixel;
-    // only r, g, b (discard alpha)
-    rect_pixels = [0, 0, 0];
-
-    for (let x = x0; x < x0 + width; x++) {
-      for (let y = y0; y < y0 + height; y++) {
-        current_pixel = this.getPixel(x, y);
-        for (let j = 0; j < rect_pixels.length; j++) {
-          rect_pixels[j] += current_pixel[j];
-        }
-      }
-    }
-    // average color
-    let average_color;
-    average_color = rect_pixels.map(x => x / rect_size);
-    return average_color;
-  }
-
-  averageSource() {
-    return this.averageColor(0, 0, this._source_width, this._source_height);
-  }
-
-  get pixels() {
-    return this._pixels;
-  }
-
-  set pixels(pixels) {
-    this._pixels = pixels;
-  }
-}
+  main();
+};
 
 // load image and return pixels. img_src can be blob or path
 let load_pixels = (img_src, canvas_size) => {
@@ -319,48 +190,387 @@ let load_pixels = (img_src, canvas_size) => {
 };
 
 
-let sketch, sketch_id;
+class Circle {
+  constructor(x, y, width, height, color, split_direction) {
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.height = height;
+    this.cx = this.x + this.width / 2; // center x coord
+    this.cy = this.y + this.height / 2; // center x coord
+    this._r = Math.min(this.width, this.height) / 2; // radius
+    this._color = color;
 
-let main = async () => {
-  let canvas_size, img_path;
-  canvas_size = 900;
-  img_path = "/assets/paintings/gioconda.jpg";
+    this.min_radius = 4;
+    this._min_size = this.r < this.min_radius;
+    this._just_split = true;
+    this._age_count = 0;
+    // how many times you have to move the mouse on the screen before the circle gets popped
+    this._split_age = this.r * .75;
 
-  let pixels;
-  pixels = await load_pixels(img_path, canvas_size);
+    if (!split_direction) {
+      // it's the first cirtcle, we have to set the direction of its split
+      if (this.height > this.width) {
+        this._split_direction = "horizontal";
+      } else {
+        this._split_direction = "vertical";
+      }
+      // since it's the first circle, we set its age to a very low value
+            this._split_age = 5;
+    } else {
+      this._split_direction = split_direction;
+    }
 
-  // resize canvas
-  $(`canvas#${sketch_id}`).prop({
-    "width": canvas_size,
-    "height": canvas_size,
-  });
+    if (mobile) {
+      // we're on mobile, let's not bore our users to death
+      this._split_age = 0;
+      this._just_split = false;
+    }
+}
 
-  let canvas, ctx;
-  canvas = document.getElementById(sketch_id);
-  if (canvas.getContext) {
-    ctx = canvas.getContext("2d", {alpha: false});
-    sketch = new Sketch(canvas, ctx, pixels.width, pixels.height);
-    sketch.pixels = pixels.data;
-    sketch.run();
+  get pos() {
+    return {
+      "x": this.x,
+      "y": this.y,
+      "cx": this.cx,
+      "cy": this.cy,
+      "r": this._r,
+      "width": this.width,
+      "height": this.height
+    };
   }
-};
 
-
-$(document).ready(() => {
-  sketch_id = "sketch";
-  main();
-});
-
-$(window).resize(() => {
-  if (sketch) {
-    sketch.resized();
+  get r() {
+    return this._r;
   }
-});
 
-$(document).mousemove((e) => {
-  if (e.target.id === sketch_id) {
-    if (sketch) {
-      sketch.splitCircle(e.offsetX, e.offsetY);
+  get color() {
+    // r g b array to rgb string
+    let color_string = "#";
+    for (let i = 0; i < this._color.length; i++) {
+      let channel;
+      channel = this._color[i];
+      if (channel > 255) {
+        channel = 255;
+      }
+      color_string += Math.floor(channel).toString(16).padStart(2, '0');
+    }
+    return color_string;
+  }
+
+  get split_direction() {
+    return this._split_direction;
+  }
+
+  get just_split() {
+    this._just_split = this._age_count < this._split_age;
+    return this._just_split;
+  }
+
+  set just_split(bool) {
+    if (this._age_count >= this._split_age) {
+      this._just_split = bool;
+      this._age_count = 0;
+    } else {
+      this._age_count++;
     }
   }
-});
+
+  get min_size() {
+    return this._min_size;
+  }
+
+}
+
+
+class Sketch {
+  constructor(canvas, context, source_width, source_height, fps) {
+    this.canvas = canvas;
+    this.ctx = context;
+    this.width = canvas.width;
+    this.height = canvas.height;
+    this._source_width = source_width;
+    this._source_height = source_height;
+
+    this.mouse_x = 0;
+    this.mouse_y = 0;
+
+    this.fps = fps || 60;
+    this.fps_interval = 1000 / this.fps;
+    // save time to limit fps
+    this.then = performance.now();
+
+    // pixels container
+    this._pixels = [];
+    // rects container
+    this._circles = [];
+    // when this is true, all circles are of minimal size
+    this._ended = false;
+    // how many circles should selected to be split when the mode is "auto"
+    this._auto_to_split = 70;
+
+    // displacement
+    this.dx = Math.floor((this.width - this._source_width) / 2);
+    this.dy = Math.floor((this.height - this._source_height) / 2);
+
+    // save canvas in memory
+    this.savedData = new Image();
+  }
+
+  run() {
+    // run once
+    this.setup();
+    // anti alias
+    this.ctx.imageSmoothingQuality = "high";
+    // run often
+    this.draw();
+  }
+
+  save() {
+    this.savedData.src = this.canvas.toDataURL("image/png");
+  }
+
+  restore() {
+    this.ctx.drawImage(this.savedData, 0, 0);
+  }
+
+  resized() {
+    this.width = this.canvas.width;
+    this.height = this.canvas.height;
+  }
+
+  mouseMoved(x, y) {
+    if (x === this.mouse_x && y === this.mouse_y) {
+      return;
+    }
+    this.mouse_x = x;
+    this.mouse_y = y;
+
+    let found, pos, i, just_split;
+
+    found = false;
+    for (i = 0; i < this._circles.length; i++) {
+      pos = this._circles[i].pos;
+      if (x >= pos.x && y >= pos.y && x <= pos.x + pos.width && y <= pos.y + pos.height && !this._circles[i].min_size) {
+        just_split = this._circles[i].just_split;
+        if (just_split) {
+          this._circles[i].just_split = false;
+          break;
+        }
+        found = true;
+        break;
+      }
+    }
+
+    if (found) {
+      // at least one has been found
+      this.splitCircle(i);
+    }
+  }
+
+  splitCircle(index) {
+    let split_direction, next_split_direction;
+    split_direction = this._circles[index].split_direction;
+    if (split_direction === "horizontal") {
+      next_split_direction = "vertical";
+    } else if (split_direction === "vertical"){
+      next_split_direction = "horizontal";
+    }
+
+    // get old circle position
+    let pos;
+    pos = this._circles[index].pos;
+
+    // remove old circle
+    this._circles.splice(index, 1);
+
+    // new position and size
+    let nx, ny, nwidth, nheight;
+    for (let i = 0; i < 2; i++) {
+      if (split_direction === "horizontal") {
+        nx = pos.x;
+        ny = pos.y + pos.height / 2 * i;
+        nwidth = pos.width;
+        nheight = pos.height / 2;
+      }  else if (split_direction === "vertical"){
+        nx = pos.x + pos.width / 2 * i;
+        ny = pos.y;
+        nwidth = pos.width / 2;
+        nheight = pos.height;
+      }
+      let average_color = this.averageColor(nx - this.dx, ny - this.dy, nwidth, nheight, true);
+      let new_rect = new Circle(nx, ny, nwidth, nheight, average_color, next_split_direction);
+      this._circles.push(new_rect);
+    }
+  }
+
+  setup() {
+    this.background = getCssProperty("--background-color");
+  }
+
+  draw() {
+    // time elapsed since last frame was rendered
+    let diff;
+    diff = performance.now() - this.then;
+    if (diff < this.fps_interval) {
+      // not enough time has passed, so we request next frame and give up on this render
+      window.requestAnimationFrame(this.draw.bind(this));
+      return;
+    }
+
+    // enough time has now passed, let's keep track of the time
+    this.then = performance.now();
+
+    // if circle is empty, it's time to generate a new circle
+    if (this._circles.length === 0) {
+      let average_color = this.averageSource();
+      let new_rect = new Circle(this.dx, this.dy, this.width - this.dx * 2, this.height - this.dy * 2, average_color);
+      this._circles.push(new_rect);
+      this.background = new_rect.color;
+      setCssProperty("--background-color", this.background);
+    }
+
+    // if the sketch is in auto mode, pop a circle
+    if (auto) {
+      // how many circles are split each time
+      let iterations;
+      if (this._circles.length < 1000) {
+        iterations = 1;
+      } else if (this._circles.length < 1500){
+        iterations = 2;
+      } else if (this._circles.length < 1750){
+        iterations = 4;
+      } else if (this._circles.length < 2000){
+        iterations = 8;
+      } else if (this._circles.length < 2250){
+        iterations = 16;
+      } else if (this._circles.length < 2500){
+        iterations = 32;
+      } else {
+        iterations = 64;
+      }
+
+      // circles big enough to be split
+      let available_circles;
+      available_circles = this._circles.filter(c => !c.min_size);
+      // sort by size
+      available_circles.sort((c1, c2) => parseInt(c2.r) - parseInt(c1.r));
+      // keep only the first 50
+      let to_keep;
+      to_keep = Math.min(available_circles.length, this._auto_to_split);
+      available_circles = available_circles.slice(0, to_keep);
+
+      for (let i = 0; i < Math.min(iterations, available_circles.length); i++) {
+         let random_index, circles_index;
+          random_index = random(0, available_circles.length - 1, true);
+          circles_index = this._circles.indexOf(available_circles[random_index]);
+          if (circles_index === -1) {
+            // this should not happen...
+            continue;
+          }
+          this.splitCircle(circles_index);
+        }
+      }
+
+    this.ctx.save();
+    // reset canvas
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    // set background
+    this.ctx.fillStyle = this.background;
+    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+    // draw rects
+    // shadow
+    this.ctx.shadowOffsetX = 3;
+    this.ctx.shadowOffsetY = 3;
+    this.ctx.shadowColor = getCssProperty("--shadow-color");
+    this.ctx.shadowBlur = 5;
+    this._circles.forEach((c, i) => {
+      let circle_pos;
+      circle_pos = c.pos;
+      this.ctx.fillStyle = c.color;
+      this.ctx.beginPath();
+      this.ctx.arc(circle_pos.cx, circle_pos.cy, circle_pos.r, 0, 2 * Math.PI);
+      this.ctx.fill();
+    });
+
+    // array containing all the minimum size circles
+    let min_size;
+    min_size = this._circles.filter(c => c.min_size == true);
+    // all the circles are small!
+    if (min_size.length === this._circles.length) {
+      // the sketch has ended
+      this._ended = true;
+      console.log("ended")
+
+      if (auto) {
+        next_image();
+      }
+
+    }
+
+    this.ctx.restore();
+
+    if (!this._ended) {
+        window.requestAnimationFrame(this.draw.bind(this));
+    }
+  }
+
+  getPixel(x, y) {
+    let index, pixel;
+    index = y * this._source_width * 4 + x * 4;
+    pixel = [];
+    for (let i = 0; i < 4; i++) {
+      pixel.push(this._pixels[index+i]);
+    }
+    return pixel;
+  }
+
+  averageColor(x0, y0, width, height) {
+    // make all parameters integer
+    x0 = Math.round(x0);
+    y0 = Math.round(y0);
+    width = Math.round(width);
+    height = Math.round(height);
+    // current rectangle size
+    let rect_size;
+    rect_size = width * height;
+    // sum of all pixels in circle, current pixel
+    let rect_pixels, current_pixel;
+    // only r, g, b (discard alpha)
+    rect_pixels = [0, 0, 0];
+
+    for (let x = x0; x < x0 + width; x++) {
+      for (let y = y0; y < y0 + height; y++) {
+        current_pixel = this.getPixel(x, y);
+        for (let j = 0; j < rect_pixels.length; j++) {
+          rect_pixels[j] += current_pixel[j];
+        }
+      }
+    }
+    // average color
+    let average_color;
+    average_color = rect_pixels.map(x => x / rect_size);
+    return average_color;
+  }
+
+  averageSource() {
+    return this.averageColor(0, 0, this._source_width, this._source_height);
+  }
+
+  get pixels() {
+    return this._pixels;
+  }
+
+  set pixels(pixels) {
+    this._pixels = pixels;
+  }
+
+  get ended() {
+    return this._ended;
+  }
+
+  set ended(bool) {
+    this._ended = bool;
+  }
+}

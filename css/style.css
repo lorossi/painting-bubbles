@@ -5,6 +5,8 @@ body, body * {
 
 :root {
   --background-color: #FFFFFF;
+  --shadow-color: #00000014;
+  --mobile: 0;
 }
 
 body {
@@ -20,6 +22,20 @@ body {
   align-items: center;
 }
 
+.sketch {
+  max-width: 100vw;
+  max-height: 100vh;
+}
+
 .hidden {
   display: none;
+}
+
+@media only screen and (max-width: 480px) and (min-width: 0px) {
+  :root {
+    --mobile: 1;
+  }
+  .body {
+    overflow: hidden;
+  }
 }

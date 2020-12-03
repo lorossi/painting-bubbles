@@ -19,3 +19,22 @@ function getCssProperty(property) {
 function setCssProperty(property, value) {
   let css_property = $(":root").css(property, value);
 }
+
+function random(min, max, int) {
+    if (max == null && min != null) {
+      max = min;
+      min = 0;
+    } else if (min == null && max == null) {
+      min = 0;
+      max = 1;
+    }
+
+   let random_num = Math.random() * (max - min) + min;
+
+   // return an integer value
+   if (int) {
+     return Math.round(random_num);
+   }
+
+   return random_num;
+}
