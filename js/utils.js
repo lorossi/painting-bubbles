@@ -38,3 +38,11 @@ function random(min, max, int) {
 
    return random_num;
 }
+
+function getMousePos(canvas, e) {
+    let rect = canvas.getBoundingClientRect();
+    return {
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top
+    };
+}

@@ -1,5 +1,6 @@
 /* jshint esversion: 8 */
-let sketch, sketch_id;
+let sketch;
+let sketch_id = "sketch";
 // make this true to start recording
 let recording = false;
 // make this true to go automatically
@@ -66,23 +67,20 @@ resize_canvas = (size) => {
 
 
 $(document).ready(() => {
-  sketch_id = "sketch";
   main();
 });
+
+/*$(window).on('mousemove', e => {
+  if (e.target.id === sketch_id && !auto) {
+    sketch.mouseMoved(e.offsetX, e.offsetY);
+  }
+});*/
 
 $(window).resize(() => {
   get_canvas_size();
   resize_canvas();
   if (sketch) {
     sketch.resized();
-  }
-});
-
-$(document).mousemove((e) => {
-  if (e.target.id === sketch_id && !auto) {
-    if (sketch) {
-      sketch.mouseMoved(e.offsetX, e.offsetY);
-    }
   }
 });
 
@@ -198,11 +196,20 @@ class Circle {
 
     this.min_radius = 4;
     this._min_size = this.r < this.min_radius;
-    this._just_split = true;
+    this._recently_split = true;
     this._age_count = 0;
     // how many times you have to move the mouse on the screen before the circle gets popped
-    this._split_age = 15;
+    /*if (this._r <= 20) {
+      this._split_age = 5;
+    } else if (this._r <= 40) {
+      this._split_age = 7;
+    } else if (this._r <= 100) {
+      this._split_age = 10;
+    }  else  {
+      this._split_age = 20;
+    }*/
 
+    this._split_age = 2;
     if (!split_direction) {
       // it's the first cirtcle, we have to set the direction of its split
       if (this.height > this.width) {
@@ -210,8 +217,7 @@ class Circle {
       } else {
         this._split_direction = "vertical";
       }
-      // since it's the first circle, we set its age to a very low value
-      this._split_age = 50;
+
     } else {
       this._split_direction = split_direction;
     }
@@ -219,7 +225,7 @@ class Circle {
     if (mobile) {
       // we're on mobile, let's not bore our users to death
       this._split_age = 0;
-      this._just_split = false;
+      this._recently_split = false;
     }
 }
 
@@ -257,14 +263,15 @@ class Circle {
     return this._split_direction;
   }
 
-  get just_split() {
-    this._just_split = this._age_count < this._split_age;
-    return this._just_split;
+  get recently_split() {
+    // has the
+    this._recently_split = this._age_count < this._split_age;
+    return this._recently_split;
   }
 
-  set just_split(bool) {
+  set recently_split(bool) {
     if (this._age_count >= this._split_age) {
-      this._just_split = bool;
+      this._recently_split = bool;
       this._age_count = 0;
     } else {
       this._age_count++;
@@ -310,6 +317,8 @@ class Sketch {
 
     // save canvas in memory
     this.savedData = new Image();
+
+    window.addEventListener('mousemove', this.mouseMoved.bind(this), false);
   }
 
   run() {
@@ -334,22 +343,24 @@ class Sketch {
     this.height = this.canvas.height;
   }
 
-  mouseMoved(x, y) {
-    if (x === this.mouse_x && y === this.mouse_y) {
+  mouseMoved(e) {
+    let mouse_coords;
+    mouse_coords = getMousePos(this.canvas, e);
+    if (mouse_coords.x === this.mouse_x && mouse_coords.y === this.mouse_y) {
       return;
     }
-    this.mouse_x = x;
-    this.mouse_y = y;
+    this.mouse_x = mouse_coords.x;
+    this.mouse_y = mouse_coords.y;
 
-    let found, pos, i, just_split;
+    let found, pos, i, recently_split;
 
     found = false;
     for (i = 0; i < this._circles.length; i++) {
       pos = this._circles[i].pos;
-      if (x >= pos.x && y >= pos.y && x <= pos.x + pos.width && y <= pos.y + pos.height && !this._circles[i].min_size) {
-        just_split = this._circles[i].just_split;
-        if (just_split) {
-          this._circles[i].just_split = false;
+      if (this.mouse_x >= pos.x && this.mouse_y >= pos.y && this.mouse_x <= pos.x + pos.width && this.mouse_y <= pos.y + pos.height && !this._circles[i].min_size) {
+        recently_split = this._circles[i].recently_split;
+        if (recently_split) {
+          this._circles[i].recently_split = false;
           break;
         }
         found = true;
@@ -395,8 +406,8 @@ class Sketch {
         nheight = pos.height;
       }
       let average_color = this.averageColor(nx - this.dx, ny - this.dy, nwidth, nheight, true);
-      let new_rect = new Circle(nx, ny, nwidth, nheight, average_color, next_split_direction);
-      this._circles.push(new_rect);
+      let new_circle = new Circle(nx, ny, nwidth, nheight, average_color, next_split_direction);
+      this._circles.push(new_circle);
     }
   }
 
@@ -404,7 +415,7 @@ class Sketch {
     this.background = getCssProperty("--background-color");
   }
 
-  draw() {
+  draw(e) {
     // time elapsed since last frame was rendered
     let diff;
     diff = performance.now() - this.then;
