@@ -11,7 +11,7 @@ let mobile = false;
 
 // images names and dir
 const dir = "../assets/paintings/";
-const names = ["american-gothic.jpg", "composition-8.jpg", "der -wanderer-uber-dem-nebelmeer.jpg", "gioconda.jpg", "great-wave.jpg", "napoleon-crossing-the-alps.jpg", "persistence-of-memory.jpg", "rebel-with-many-causes.jpg", "starry-night.jpg", "the-kiss.jpg", "the-son-of-men.jpg"]
+const names = ["american-gothic.jpg", "composition-8.jpg", "der -wanderer-uber-dem-nebelmeer.jpg", "gioconda.jpg", "great-wave.jpg", "napoleon-crossing-the-alps.jpg", "persistence-of-memory.jpg", "rebel-with-many-causes.jpg", "starry-night.jpg", "the-kiss.jpg", "the-son-of-men.jpg"];
 
 let main = async () => {
   if (sketch) {
@@ -201,7 +201,7 @@ class Circle {
     this._just_split = true;
     this._age_count = 0;
     // how many times you have to move the mouse on the screen before the circle gets popped
-    this._split_age = 15;
+    this._split_age = 1;
 
     if (!split_direction) {
       // it's the first cirtcle, we have to set the direction of its split
@@ -211,7 +211,7 @@ class Circle {
         this._split_direction = "vertical";
       }
       // since it's the first circle, we set its age to a very low value
-      this._split_age = 5;
+      this._split_age = 1;
     } else {
       this._split_direction = split_direction;
     }
@@ -360,6 +360,7 @@ class Sketch {
     if (found) {
       // at least one has been found
       this.splitCircle(i);
+      window.requestAnimationFrame(this.draw.bind(this));
     }
   }
 
@@ -407,7 +408,7 @@ class Sketch {
     // time elapsed since last frame was rendered
     let diff;
     diff = performance.now() - this.then;
-    if (diff < this.fps_interval) {
+    if (diff < this.fps_interval && auto) {
       // not enough time has passed, so we request next frame and give up on this render
       window.requestAnimationFrame(this.draw.bind(this));
       return;
@@ -480,6 +481,7 @@ class Sketch {
     this.ctx.shadowOffsetY = 3;
     this.ctx.shadowColor = getCssProperty("--shadow-color");
     this.ctx.shadowBlur = 5;
+    let all_min_size = true;
     this._circles.forEach((c, i) => {
       let circle_pos;
       circle_pos = c.pos;
@@ -487,25 +489,22 @@ class Sketch {
       this.ctx.beginPath();
       this.ctx.arc(circle_pos.cx, circle_pos.cy, circle_pos.r, 0, 2 * Math.PI);
       this.ctx.fill();
+      if (all_min_size && !c.min_size) {
+        all_min_size = false;
+      }
     });
 
-    // array containing all the minimum size circles
-    let min_size;
-    min_size = this._circles.filter(c => c.min_size == true);
     // all the circles are small!
-    if (min_size.length === this._circles.length) {
+    if (all_min_size) {
       // the sketch has ended
       this._ended = true;
-
       if (auto) {
         next_image();
       }
-
     }
-
     this.ctx.restore();
 
-    if (!this._ended) {
+    if (!this._ended && auto) {
         window.requestAnimationFrame(this.draw.bind(this));
     }
   }
