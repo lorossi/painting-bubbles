@@ -94,9 +94,6 @@ $(document).mousemove((e) => {
 // enter -> toggle auto/manual mode
 // r -> go to random painting
 $(document).keydown((e) => {
-  console.log(e);
-  console.log(e.which);
-
   if (e.which === 37) {
     // key arrow left
     next_image(-1);
@@ -499,7 +496,6 @@ class Sketch {
     if (min_size.length === this._circles.length) {
       // the sketch has ended
       this._ended = true;
-      console.log("ended")
 
       if (auto) {
         next_image();
