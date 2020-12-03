@@ -1,0 +1,5 @@
+- Add more paintings
+- Give user the option of uploading personal paintings
+- Drag and drop
+- Write README (YEAH...)
+- Option to register videos
