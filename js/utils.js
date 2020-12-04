@@ -11,16 +11,32 @@ let get_index_from_xy = (x, y, width) => {
   return x + width * y;
 };
 
-function getCssProperty(property) {
+let get_css_property = (property) => {
   let css_property = $(":root").css(property);
-  return css_property.split(" ").join("");
-}
+  css_property = css_property.split(" ").join("");
 
-function setCssProperty(property, value) {
+  if (css_property === "true") {
+    return true;
+  } else if (css_property === "false") {
+    return false;
+  }
+
+  if (parseInt(css_property) == css_property) {
+    // property is int
+    return parseInt(css_property);
+  } else if (parseFloat(css_property) == css_property) {
+    // property is float
+    return parseFloat(css_property);
+  }
+
+  return css_property;
+};
+
+let set_css_property = (property, value) => {
   let css_property = $(":root").css(property, value);
-}
+};
 
-function random(min, max, int) {
+let random = (min, max, int) => {
     if (max == null && min != null) {
       max = min;
       min = 0;
@@ -37,12 +53,20 @@ function random(min, max, int) {
    }
 
    return random_num;
-}
+};
 
-function getMousePos(canvas, e) {
+let get_mouse_pos = (canvas, e) => {
     let rect = canvas.getBoundingClientRect();
     return {
       x: e.clientX - rect.left,
       y: e.clientY - rect.top
     };
-}
+};
+
+let get_touch_pos = (canvas, e) => {
+  let rect = canvas.getBoundingClientRect();
+  return {
+    x: e.targetTouches[0].clientX - rect.left,
+    y: e.targetTouches[0].clientY - rect.top
+  };
+};
