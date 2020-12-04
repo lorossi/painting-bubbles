@@ -111,14 +111,14 @@ $(document).keydown((e) => {
 // dir = -1 -> previous
 // dir = 0 -> rest
 let next_image = (dir) => {
+  // stop sketch
+  sketch.ended = true;
+  // reset variable
+  sketch = null;
   // remove old canvas
   $(`#${sketch_id}`).remove();
   // create a new canvas
   $(`.container`).append(`<canvas id="${sketch_id}"></canvas>`);
-  // stop sketch
-  sketch.ended = false;
-  // reset variable
-  sketch = null;
 
   if (dir === undefined) {
     dir = 1;
@@ -524,15 +524,19 @@ class Sketch {
       }
     });
 
+    this.ctx.restore();
+
     // all the circles are small!
     if (all_min_size) {
       // the sketch has ended
       this._ended = true;
       if (auto) {
         next_image();
+      } else {
+        random_dir = Math.round(Math.random() * 10000);
+        next_image(random_dir);
       }
     }
-    this.ctx.restore();
 
     if (!this._ended && auto) {
         window.requestAnimationFrame(this.draw.bind(this));
