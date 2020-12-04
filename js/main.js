@@ -48,11 +48,7 @@ get_canvas_size = () => {
     canvas_size = 300;
   }
 
-  if (getCssProperty("--mobile") == 1) {
-    mobile = true;
-  } else {
-    mobile = false;
-  }
+  mobile = get_css_property("--mobile");
 
   return canvas_size;
 };
@@ -166,7 +162,7 @@ let load_pixels = (img_src, canvas_size) => {
         // reset canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         // set background
-        ctx.fillStyle = getCssProperty("--background-color");
+        ctx.fillStyle = get_css_property("--background-color");
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         // draw image
         ctx.drawImage(img, 0, 0, image_width, image_height, 0, 0, image_width * scl, image_height * scl);
@@ -222,7 +218,7 @@ class Circle {
 
     if (mobile) {
       // we're on mobile, let's not bore our users to death
-      this._split_age = 0;
+      this._split_age = 2;
       this._recently_split = false;
     }
 }
@@ -292,9 +288,6 @@ class Sketch {
     this._source_width = source_width;
     this._source_height = source_height;
 
-    this.mouse_x = 0;
-    this.mouse_y = 0;
-
     this.fps = fps || 60;
     this.fps_interval = 1000 / this.fps;
     // save time to limit fps
@@ -318,7 +311,8 @@ class Sketch {
 
     // event listener
     window.addEventListener('mousemove', this.mouseMoved.bind(this), false);
-    window.addEventListener('drag', this.mouseMoved.bind(this), false);
+    window.addEventListener('touchstart', this.touchMoved.bind(this), false);
+    window.addEventListener('touchmove', this.touchMoved.bind(this), false);
   }
 
   run() {
@@ -359,19 +353,23 @@ class Sketch {
 
   mouseMoved(e) {
     let mouse_coords;
-    mouse_coords = getMousePos(this.canvas, e);
-    if (mouse_coords.x === this.mouse_x && mouse_coords.y === this.mouse_y) {
-      return;
-    }
-    this.mouse_x = mouse_coords.x;
-    this.mouse_y = mouse_coords.y;
+    mouse_coords = get_mouse_pos(this.canvas, e);
+    this.searchCircle(mouse_coords.x, mouse_coords.y);
+  }
 
+  touchMoved(e) {
+    let touch_coords;
+    touch_coords = get_touch_pos(this.canvas, e);
+    this.searchCircle(touch_coords.x, touch_coords.y);
+  }
+
+  searchCircle(x, y) {
     let found, pos, i, recently_split;
 
     found = false;
     for (i = 0; i < this._circles.length; i++) {
       pos = this._circles[i].pos;
-      if (this.mouse_x >= pos.x && this.mouse_y >= pos.y && this.mouse_x <= pos.x + pos.width && this.mouse_y <= pos.y + pos.height && !this._circles[i].min_size) {
+      if (x >= pos.x && y >= pos.y && x <= pos.x + pos.width && y <= pos.y + pos.height && !this._circles[i].min_size) {
         recently_split = this._circles[i].recently_split;
         if (recently_split) {
           this._circles[i].recently_split = false;
@@ -426,7 +424,7 @@ class Sketch {
   }
 
   setup() {
-    this.background = getCssProperty("--background-color");
+    this.background = get_css_property("--background-color");
   }
 
   draw(e) {
@@ -451,7 +449,7 @@ class Sketch {
       this._circles.push(new_rect);
       // the background color is now the color of the rect, not only for canvas but for the whole page
       this.background = new_rect.color;
-      setCssProperty("--background-color", this.background);
+      set_css_property("--background-color", this.background);
       // create a favicon with the same color
       this.createFavicon(this.background);
     }
@@ -509,7 +507,7 @@ class Sketch {
     // shadow
     this.ctx.shadowOffsetX = 3;
     this.ctx.shadowOffsetY = 3;
-    this.ctx.shadowColor = getCssProperty("--shadow-color");
+    this.ctx.shadowColor = get_css_property("--shadow-color");
     this.ctx.shadowBlur = 5;
     let all_min_size = true;
     this._circles.forEach((c, i) => {

@@ -6,7 +6,7 @@ body, body * {
 :root {
   --background-color: #FFFFFF;
   --shadow-color: #00000014;
-  --mobile: 0;
+  --mobile: false;
 }
 
 body {
@@ -33,7 +33,7 @@ body {
 
 @media only screen and (max-width: 480px) and (min-width: 0px) {
   :root {
-    --mobile: 1;
+    --mobile: true;
   }
 
   html, body {
