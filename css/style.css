@@ -17,6 +17,7 @@ body, body * {
 body {
   background-color: var(--background-color);
   font-family: AvenirRoman;
+  color: black;
 }
 
 .container {
@@ -47,6 +48,10 @@ body {
 
 .credits a, .credits a:active, .credits a:visited {
   color: inherit;
+}
+
+.credits a:hover {
+  font-style: italic;
 }
 
 @media only screen and (max-width: 480px) and (min-width: 0px) {
