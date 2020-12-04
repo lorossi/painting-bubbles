@@ -11,17 +11,17 @@ let paths_index = 0;
 let mobile = false;
 
 // images names and dir
-const dir = "/assets/paintings/";
-const names = ["american-gothic.jpg", "composition-8.jpg", "der -wanderer-uber-dem-nebelmeer.jpg", "gioconda.jpg", "great-wave.jpg", "napoleon-crossing-the-alps.jpg", "persistence-of-memory.jpg", "rebel-with-many-causes.jpg", "starry-night.jpg", "the-kiss.jpg", "the-son-of-men.jpg"];
+const dir = "assets/paintings/";
+const names = ["a-sunday-on-la-grande-jatte.jpg", "american-gothic.jpg", "composition-8.jpg", "creazione-di-adamo.jpg", "der-wanderer-uber-dem-nebelmeer.jpg", "el-beso.jpg", "gioconda.jpg", "great-wave.jpg", "guernica.jpg", "napoleon-crossing-the-alps.jpg", "nascita-di-venere.jpg", "nighthawks.jpg", "persistence-of-memory.jpg", "pm014-piet-modrian-composition-2-with-red-blue-and-yellow.jpg", "rebel-with-many-causes.jpg", "skrik.jpg", "starry-night.jpg", "the-kiss.jpg", "the-son-of-men.jpg", "the-tower-of-babel.jpg"];
 
 let main = async () => {
-  if (sketch) {
-    sketch = null;
-  }
-
   let canvas_size, img_path;
   canvas_size = get_canvas_size();
   resize_canvas(canvas_size);
+
+  if (!recording) {
+    paths_index = random(0, names.length-1, true);
+  }
 
   img_path = dir + names[paths_index];
 
@@ -70,12 +70,6 @@ $(document).ready(() => {
   main();
 });
 
-/*$(window).on('mousemove', e => {
-  if (e.target.id === sketch_id && !auto) {
-    sketch.mouseMoved(e.offsetX, e.offsetY);
-  }
-});*/
-
 $(window).resize(() => {
   get_canvas_size();
   resize_canvas();
@@ -117,7 +111,14 @@ $(document).keydown((e) => {
 // dir = -1 -> previous
 // dir = 0 -> rest
 let next_image = (dir) => {
-  sketch.ended = true;
+  // remove old canvas
+  $(`#${sketch_id}`).remove();
+  // create a new canvas
+  $(`.container`).append(`<canvas id="${sketch_id}"></canvas>`);
+  // stop sketch
+  sketch.ended = false;
+  // reset variable
+  sketch = null;
 
   if (dir === undefined) {
     dir = 1;
@@ -198,26 +199,23 @@ class Circle {
     this._min_size = this.r < this.min_radius;
     this._recently_split = true;
     this._age_count = 0;
-    // how many times you have to move the mouse on the screen before the circle gets popped
-    /*if (this._r <= 20) {
-      this._split_age = 5;
-    } else if (this._r <= 40) {
-      this._split_age = 7;
-    } else if (this._r <= 100) {
-      this._split_age = 10;
-    }  else  {
-      this._split_age = 20;
-    }*/
 
-    this._split_age = 2;
+    if (this._r < 10) {
+        this._split_age = 1;
+    } else {
+        this._split_age = 2;
+    }
+
+
     if (!split_direction) {
-      // it's the first cirtcle, we have to set the direction of its split
+      // it's the first circle, we have to set the direction of its split
       if (this.height > this.width) {
         this._split_direction = "horizontal";
       } else {
         this._split_direction = "vertical";
       }
-
+      // let's also set an higher life
+      this._split_age = 10;
     } else {
       this._split_direction = split_direction;
     }
@@ -318,7 +316,9 @@ class Sketch {
     // save canvas in memory
     this.savedData = new Image();
 
+    // event listener
     window.addEventListener('mousemove', this.mouseMoved.bind(this), false);
+    window.addEventListener('drag', this.mouseMoved.bind(this), false);
   }
 
   run() {
@@ -341,6 +341,20 @@ class Sketch {
   resized() {
     this.width = this.canvas.width;
     this.height = this.canvas.height;
+  }
+
+  createFavicon(color) {
+    let favicon = document.createElement('canvas');
+    favicon.width = 16;
+    favicon.height = 16;
+    let favicon_ctx = favicon.getContext('2d');
+    favicon_ctx.fillStyle = color;
+    favicon_ctx.fillRect(0, 0, 16, 16);
+    let link = document.createElement('link');
+    link.type = 'image/x-icon';
+    link.rel = 'shortcut icon';
+    link.href = favicon.toDataURL("image/x-icon");
+    document.getElementsByTagName('head')[0].appendChild(link);
   }
 
   mouseMoved(e) {
@@ -430,11 +444,16 @@ class Sketch {
 
     // if circle is empty, it's time to generate a new circle
     if (this._circles.length === 0) {
+      // compute average image color
       let average_color = this.averageSource();
+      //create a new rect
       let new_rect = new Circle(this.dx, this.dy, this.width - this.dx * 2, this.height - this.dy * 2, average_color);
       this._circles.push(new_rect);
+      // the background color is now the color of the rect, not only for canvas but for the whole page
       this.background = new_rect.color;
       setCssProperty("--background-color", this.background);
+      // create a favicon with the same color
+      this.createFavicon(this.background);
     }
 
     // if the sketch is in auto mode, pop a circle

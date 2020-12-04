@@ -35,7 +35,9 @@ body {
   :root {
     --mobile: 1;
   }
-  .body {
+
+  html, body {
     overflow: hidden;
+    height: 100%;
   }
 }
