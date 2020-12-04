@@ -1,38 +1,56 @@
 /* jshint esversion: 8 */
+// basic objects
 let sketch;
+// sketch container id
 let sketch_id = "sketch";
 // make this true to start recording
-let recording = false;
+let recording = true;
 // make this true to go automatically
-let auto = false;
+let auto = true;
 // current path
-let paths_index = 0;
+let current_path;
 // are we on mobile?
 let mobile = false;
 
 // images names and dir
 const dir = "assets/paintings/";
-const names = ["a-sunday-on-la-grande-jatte.jpg", "american-gothic.jpg", "composition-8.jpg", "creazione-di-adamo.jpg", "der-wanderer-uber-dem-nebelmeer.jpg", "el-beso.jpg", "gioconda.jpg", "great-wave.jpg", "guernica.jpg", "napoleon-crossing-the-alps.jpg", "nascita-di-venere.jpg", "nighthawks.jpg", "persistence-of-memory.jpg", "pm014-piet-modrian-composition-2-with-red-blue-and-yellow.jpg", "rebel-with-many-causes.jpg", "skrik.jpg", "starry-night.jpg", "the-kiss.jpg", "the-son-of-men.jpg", "the-tower-of-babel.jpg"];
+const names = ["a-sunday-on-la-grande-jatte.jpg", "american-gothic.jpg", "composition-8.jpg", "creazione-di-adamo.jpg", "der-wanderer-uber-dem-nebelmeer.jpg", "el-beso.jpg", "gioconda.jpg", "great-wave.jpg", "guernica.jpg", "napoleon-crossing-the-alps.jpg", "nascita-di-venere.jpg", "nighthawks.jpg", "persistence-of-memory.jpg", "piet-modrian-composition-2-with-red-blue-and-yellow.jpg", "rebel-with-many-causes.jpg", "skrik.jpg", "starry-night.jpg", "the-kiss.jpg", "the-son-of-men.jpg", "the-tower-of-babel.jpg"];
 
 let main = async () => {
   let canvas_size, img_path;
+  // get correct size and resize canvas
   canvas_size = get_canvas_size();
   resize_canvas(canvas_size);
 
   if (!recording) {
-    paths_index = random(0, names.length-1, true);
+    // load a random image
+    current_path = random(0, names.length - 1, true);
+  } else {
+    // load the first image
+    current_path = 0;
   }
-
-  img_path = dir + names[paths_index];
+  img_path = dir + names[current_path];
 
   let pixels;
   pixels = await load_pixels(img_path, canvas_size);
+
+  let capturer;
+  if (recording) {
+    // fire up the capturer
+    // currently generating JPG files, will change later into gifs
+    capturer = new CCapture(
+                            {
+                             "format": "png",
+                             "name": names[current_path].replace("-", " ")
+                            }
+                          );
+  }
 
   let canvas, ctx;
   canvas = document.getElementById(sketch_id);
   if (canvas.getContext) {
     ctx = canvas.getContext("2d", {alpha: false});
-    sketch = new Sketch(canvas, ctx, pixels.width, pixels.height);
+    sketch = new Sketch(canvas, ctx, pixels.width, pixels.height, 60, capturer);
     sketch.pixels = pixels.data;
     sketch.run();
   }
@@ -40,6 +58,7 @@ let main = async () => {
 
 get_canvas_size = () => {
   let canvas_size;
+  // adaptive size
   if ($(document).width() >= 900 && $(document).height() >= 900) {
     canvas_size = 900;
   } else if ($(document).width() >= 600 && $(document).height() >= 600) {
@@ -97,8 +116,7 @@ $(document).keydown((e) => {
   } else if (e.which === 82) {
     // key R
     let random_dir;
-    random_dir = Math.round(Math.random() * 10000);
-    next_image(random_dir);
+    next_image("random");
   }
 });
 
@@ -107,20 +125,22 @@ $(document).keydown((e) => {
 // dir = -1 -> previous
 // dir = 0 -> rest
 let next_image = (dir) => {
-  // stop sketch
-  sketch.ended = true;
-  // reset variable
-  sketch = null;
-  // remove old canvas
-  $(`#${sketch_id}`).remove();
-  // create a new canvas
-  $(`.container`).append(`<canvas id="${sketch_id}"></canvas>`);
+  // stop sketch (if any)
+  if (sketch) {
+    sketch.ended = true;
+    // remove old canvas
+    $(`#${sketch_id}`).remove();
+    // create a new canvas
+    $(`.container`).append(`<canvas id="${sketch_id}"></canvas>`);
+  }
 
   if (dir === undefined) {
     dir = 1;
+  } else if (dir === "random") {
+    dir = random(0, 100000, true);
   }
 
-  paths_index = (paths_index + dir) % names.length;
+  current_path = (current_path + dir) % names.length;
 
   main();
 };
@@ -191,7 +211,7 @@ class Circle {
     this._r = Math.min(this.width, this.height) / 2; // radius
     this._color = color;
 
-    this.min_radius = 4;
+    this.min_radius = 2;
     this._min_size = this.r < this.min_radius;
     this._recently_split = true;
     this._age_count = 0;
@@ -280,7 +300,7 @@ class Circle {
 
 
 class Sketch {
-  constructor(canvas, context, source_width, source_height, fps) {
+  constructor(canvas, context, source_width, source_height, fps, capturer) {
     this.canvas = canvas;
     this.ctx = context;
     this.width = canvas.width;
@@ -290,8 +310,8 @@ class Sketch {
 
     this.fps = fps || 60;
     this.fps_interval = 1000 / this.fps;
-    // save time to limit fps
-    this.then = performance.now();
+
+    this.capturer = capturer;
 
     // pixels container
     this._pixels = [];
@@ -300,13 +320,13 @@ class Sketch {
     // when this is true, all circles are of minimal size
     this._ended = false;
     // how many circles should selected to be split when the mode is "auto"
-    this._auto_to_split = 70;
+    this._auto_to_split = 50;
 
     // displacement
     this.dx = Math.floor((this.width - this._source_width) / 2);
     this.dy = Math.floor((this.height - this._source_height) / 2);
 
-    // save canvas in memory
+    // save canvas in memory (currently unused, might delete later)
     this.savedData = new Image();
 
     // event listener
@@ -338,6 +358,7 @@ class Sketch {
   }
 
   createFavicon(color) {
+    // create a monocolor canvas to be set as favicon
     let favicon = document.createElement('canvas');
     favicon.width = 16;
     favicon.height = 16;
@@ -424,14 +445,21 @@ class Sketch {
   }
 
   setup() {
+    // load background
     this.background = get_css_property("--background-color");
+    if (this.capturer) {
+      // start capturing
+      this.capturer.start();
+    }
+    // save time to limit fps
+    this.then = performance.now();
   }
 
   draw(e) {
     // time elapsed since last frame was rendered
     let diff;
     diff = performance.now() - this.then;
-    if (diff < this.fps_interval && auto) {
+    if (diff < this.fps_interval && auto && !recording) {
       // not enough time has passed, so we request next frame and give up on this render
       window.requestAnimationFrame(this.draw.bind(this));
       return;
@@ -470,8 +498,12 @@ class Sketch {
         iterations = 16;
       } else if (this._circles.length < 2500){
         iterations = 32;
-      } else {
+      } else if (this._circles.length < 2750){
         iterations = 64;
+      } else if (this._circles.length < 3000){
+        iterations = 128;
+      } else {
+        iterations = 256;
       }
 
       // circles big enough to be split
@@ -481,7 +513,7 @@ class Sketch {
       available_circles.sort((c1, c2) => parseInt(c2.r) - parseInt(c1.r));
       // keep only the first 50
       let to_keep;
-      to_keep = Math.min(available_circles.length, this._auto_to_split);
+      to_keep = Math.min(available_circles.length, Math.max(this._auto_to_split, iterations));
       available_circles = available_circles.slice(0, to_keep);
 
       for (let i = 0; i < Math.min(iterations, available_circles.length); i++) {
@@ -503,16 +535,31 @@ class Sketch {
     this.ctx.fillStyle = this.background;
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
+    // if this is true, all circles cannot become smaller
+    let all_min_size = true;
     // draw rects
     // shadow
-    this.ctx.shadowOffsetX = 3;
-    this.ctx.shadowOffsetY = 3;
     this.ctx.shadowColor = get_css_property("--shadow-color");
-    this.ctx.shadowBlur = 5;
-    let all_min_size = true;
     this._circles.forEach((c, i) => {
       let circle_pos;
       circle_pos = c.pos;
+
+      if (c.pos.r > 15) {
+        this.ctx.shadowOffsetX = 3;
+        this.ctx.shadowOffsetY = 3;
+        this.ctx.shadowBlur = 5;
+      } else if (c.pos.r > 5){
+        // smaller shadow for very small circles
+        this.ctx.shadowOffsetX = 1;
+        this.ctx.shadowOffsetY = 1;
+        this.ctx.shadowBlur = 2;
+      } else {
+        // no shadow for smallest circles
+        this.ctx.shadowOffsetX = 0;
+        this.ctx.shadowOffsetY = 0;
+        this.ctx.shadowBlur = 0;
+      }
+
       this.ctx.fillStyle = c.color;
       this.ctx.beginPath();
       this.ctx.arc(circle_pos.cx, circle_pos.cy, circle_pos.r, 0, 2 * Math.PI);
@@ -521,8 +568,12 @@ class Sketch {
         all_min_size = false;
       }
     });
-
     this.ctx.restore();
+
+    // save frame if recording
+    if (recording) {
+      this.capturer.capture(this.canvas);
+    }
 
     // all the circles are small!
     if (all_min_size) {
@@ -531,13 +582,24 @@ class Sketch {
       if (auto) {
         next_image();
       } else {
-        random_dir = Math.round(Math.random() * 10000);
-        next_image(random_dir);
+        next_image("random");
+      }
+
+      // if recording, stop and save
+      if (recording) {
+        this.capturer.stop();
+        this.capturer.save();
       }
     }
 
-    if (!this._ended && auto) {
-        window.requestAnimationFrame(this.draw.bind(this));
+    if (!this._ended && (auto || recording || this._circles.length == 1)) {
+      // time to ask for another frame but only if not ended and at least one of those requirements is met:
+      //  - the sketch is in auto mode
+      //  - the sketch is in record mode
+      //  - if there's only one circle (it wouldn't start auto mode otherwise)
+
+      // load the next frame
+      window.requestAnimationFrame(this.draw.bind(this));
     }
   }
 
