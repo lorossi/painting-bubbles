@@ -90,6 +90,25 @@ body {
   display: none;
 }
 
+.hint {
+  position: absolute;
+  width: 100vw;
+  height: 100vh;
+  left: 0;
+  top: 0;
+
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+
+  user-select: none;
+  font-size: 3rem;
+
+  opacity: 0.5;
+  text-shadow: 6px 6px 10px var(--text-shadow-color);
+}
+
 @media only screen and (max-width: 480px) {
   :root {
     --mobile: true;

@@ -70,10 +70,10 @@ resize_canvas = (size) => {
   });
 };
 
-
 $(document).ready(() => {
   console.clear();
   console.log("%cSnooping around? Check the repo! https://github.com/lorossi/painting-bubbles", "color:white;font-size:1.5rem;");
+  console.log("%cAs opening the console messes with the browser's mouse events, I recommend it to be closed to better enjoy the experience!", "color:white;font-size:1rem;");
   main();
 
   // disable stop
@@ -362,7 +362,7 @@ class Sketch {
     // how many circles should be selected for splitting
     this.auto_to_keep = 50;
     // amout of split circles
-    this.split_circles = 0;
+    this._split_circles = 0;
     // pixels container
     this._pixels = [];
     // rects container
@@ -378,9 +378,25 @@ class Sketch {
     this.savedData = new Image();
 
     // event listener
-    this.canvas.addEventListener('mousemove', this.mouseMoved.bind(this), false);
-    this.canvas.addEventListener('touchstart', this.touchMoved.bind(this), false);
-    this.canvas.addEventListener('touchmove', this.touchMoved.bind(this), false);
+    document.addEventListener('mousemove', this.mouseMoved.bind(this), false);
+    document.addEventListener('touchstart', this.touchMoved.bind(this), false);
+    document.addEventListener('touchmove', this.touchMoved.bind(this), false);
+
+    this.hint_container_class = "hint";
+    // hint timeout
+    if (!recording) {
+      self.hint_timeout = setTimeout(() => {
+        let hint_div;
+        if (mobile) {
+          hint_div = $(`<div class='${this.hint_container_class}'><p>Tap here...</p></div>`);
+        } else {
+          hint_div = $(`<div class='${this.hint_container_class}'><p>Move your mouse here...</p></div>`);
+        }
+
+        $("body").append(hint_div);
+        $(hint_div).hide().fadeIn(1000);
+      }, 2000);
+    }
   }
 
   run() {
@@ -444,6 +460,8 @@ class Sketch {
   }
 
   searchCircle(x, y) {
+    if (x < 0 || x > this.width || y < 0 || y > this.height) return;
+
     let found, pos, i;
     found = false;
     for (i = 0; i < this._circles.length; i++) {
@@ -466,6 +484,18 @@ class Sketch {
   }
 
   splitCircle(index) {
+    // remove hint timeout (if set)
+    if (self.hint_timeout) {
+      clearTimeout(self.hint_timeout);
+    }
+
+    // check if hint has already been displayed
+    if ($(`.${this.hint_container_class}`).length > 0) {
+      // if so, fade it out
+      $(`.${this.hint_container_class}`).fadeOut(500);
+    }
+
+    // determine next split direction
     let split_direction, next_split_direction;
     split_direction = this._circles[index].split_direction;
     if (split_direction === "horizontal") {
@@ -603,7 +633,7 @@ class Sketch {
 
     // save frame if recording
     if (recording) {
-      this.captureFrame();
+      capturer.capture(this.canvas);
     }
 
     // if the sketch is in auto mode, pop a circle
@@ -616,8 +646,8 @@ class Sketch {
 
 
       let iterations;
-      if (this.split_circles < 900) {
-        iterations = Math.floor(this.split_circles / 300);
+      if (this._split_circles < 900) {
+        iterations = Math.floor(this._split_circles / 300);
         iterations = iterations <= 0 ? 1 : iterations;
       } else {
         iterations =  Math.floor(this._circles.length / 25);
@@ -632,7 +662,7 @@ class Sketch {
             continue;
           }
           this.splitCircle(circles_index);
-          this.split_circles++;
+          this._split_circles++;
         }
       }
 
@@ -641,10 +671,6 @@ class Sketch {
       // the sketch has ended
       this._ended = true;
     }
-  }
-
-  captureFrame() {
-    capturer.capture(this.canvas);
   }
 
   getPixel(x, y) {

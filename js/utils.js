@@ -64,7 +64,7 @@ let get_mouse_pos = (canvas, e) => {
 };
 
 let get_touch_pos = (canvas, e) => {
-  let rect = canvas.getBoundingClientRect();
+  let rect = canvas.getBoundingClientRect(); 
   return {
     x: e.targetTouches[0].clientX - rect.left,
     y: e.targetTouches[0].clientY - rect.top
