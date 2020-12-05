@@ -18,18 +18,7 @@ const names = ["a-sunday-on-la-grande-jatte.jpg", "american-gothic.jpg", "blue-p
 
 // main function
 let main = async () => {
-  let canvas_size, img_path;
-  // get correct size and resize canvas
-  canvas_size = get_canvas_size();
-  resize_canvas(canvas_size);
-
-  if (!recording && !current_path) {
-    // load a random image
-    current_path = random(0, names.length - 1, true);
-  } else if (recording && !current_path) {
-    current_path = 0;
-  }
-  img_path = dir + names[current_path];
+  next_image(0);
 
   // load image pixels
   let pixels;
@@ -140,14 +129,17 @@ $(document).ready(() => {
 // direction = 0 -> reset
 // direction = "random" -> random
 let next_image = async (direction) => {
-  if (recording && current_path === names.length) {
-    console.log("%cAll paintings have been recorded", "color:red;font-size:1.5rem;");
-    return;
-  } else if (recording) {
-    await capturer.stop();
-    await capturer.save();
-    console.log(`%cRecorded painting ${current_path + 1}/${names.length}`, "color:green;font-size:1rem;");
-    console.log(`%c Started recording painting ${current_path + 2}/${names.length}`, "color:yellow;font-size:1rem;");
+  if (recording) {
+    if (current_path === names.length) {
+      console.log("%cAll paintings have been recorded", "color:red;font-size:1.5rem;");
+      return;
+    } else if (current_path === undefined) {
+      current_path = 0;
+    } else {
+      await capturer.stop();
+      await capturer.save();
+      console.log(`%cRecorded painting ${current_path + 1}/${names.length}`, "color:green;font-size:1rem;");
+    }
   }
 
   if (direction === undefined) {
@@ -161,14 +153,17 @@ let next_image = async (direction) => {
   img_path = dir + names[current_path];
   // get canvas size
   canvas_size = get_canvas_size();
-  // load pixels
-  let pixels;
-  pixels = await load_pixels(img_path, canvas_size);
+  resize_canvas(canvas_size);
 
-  // put pixels inside sketch
-  sketch.pixels = pixels.data;
-  sketch.source_width = pixels.width;
-  sketch.source_height = pixels.height;
+  if (sketch) {
+    // load pixels
+    let pixels;
+    pixels = await load_pixels(img_path, canvas_size);
+
+    // put pixels inside sketch
+    sketch.pixels = pixels.data;
+    sketch.source_width = pixels.width;
+    sketch.source_height = pixels.height;
 
   // fire up recorder again
   if (recording) {
@@ -178,12 +173,14 @@ let next_image = async (direction) => {
                              autoSaveTime: 30,
                              frameRate: 60
                             });
+    console.log(`%c Started recording painting ${current_path + 1}/${names.length}`, "color:yellow;font-size:1rem;");
   }
 
-  // reset sketch
-  sketch.reset();
-  // reload sketch
-  sketch.run();
+    // reset sketch
+    sketch.reset();
+    // reload sketch
+    sketch.run();
+  }
 };
 
 // load image and return pixels. img_src can be blob or path
