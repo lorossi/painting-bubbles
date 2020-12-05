@@ -4,4 +4,5 @@
 - Write README (YEAH...)
 - ~Option to register videos~ **DONE**
 - ~Better mobile support~ **DONE**
-- Add buttons interface
+- ~Add buttons interface~ **DONE**
+- Record some videos
