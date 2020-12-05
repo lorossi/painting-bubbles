@@ -276,9 +276,9 @@ class Circle {
     this._age_count = 0;
 
     if (this._r < 10) {
-      this._split_age = 1;
+      this._split_age = 2;
     } else {
-      this._split_age = 3;
+      this._split_age = 4;
     }
 
     if (!split_direction) {
@@ -289,7 +289,7 @@ class Circle {
         this._split_direction = "vertical";
       }
       // let's also set an higher life
-      this._split_age = 20;
+      this._split_age = 10;
     } else {
       this._split_direction = split_direction;
     }
