@@ -44,6 +44,7 @@ let main = async () => {
                              autoSaveTime: 30,
                              frameRate: 60
                             });
+    console.log(`%c Started recording painting ${current_path + 1}/${names.length}`, "color:yellow;font-size:1rem;");
   }
 
   // create canvas and sketch
@@ -146,6 +147,7 @@ let next_image = async (direction) => {
     await capturer.stop();
     await capturer.save();
     console.log(`%cRecorded painting ${current_path + 1}/${names.length}`, "color:green;font-size:1rem;");
+    console.log(`%c Started recording painting ${current_path + 2}/${names.length}`, "color:yellow;font-size:1rem;");
   }
 
   if (direction === undefined) {
