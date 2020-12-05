@@ -130,15 +130,18 @@ $(document).ready(() => {
 // direction = "random" -> random
 let next_image = async (direction) => {
   if (recording) {
-    if (current_path === names.length) {
-      console.log("%cAll paintings have been recorded", "color:red;font-size:1.5rem;");
-      return;
-    } else if (current_path === undefined) {
+    if (current_path === undefined) {
       current_path = 0;
     } else {
       await capturer.stop();
       await capturer.save();
       console.log(`%cRecorded painting ${current_path + 1}/${names.length}`, "color:green;font-size:1rem;");
+    }
+
+    if (current_path === (names.length - 1)) {
+      console.log("%cAll paintings have been recorded", "color:red;font-size:1.5rem;");
+      recording = false;
+      return;
     }
   }
 
