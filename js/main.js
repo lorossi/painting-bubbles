@@ -19,7 +19,11 @@ const names = ["a-sunday-on-la-grande-jatte.jpg", "american-gothic.jpg", "blue-p
 // main function
 let main = async () => {
   // load next image
-  next_image(0);
+  if (recording) {
+    next_image(0);
+  } else {
+    next_image("random");
+  }
 
   // load image pixels
   let pixels;
@@ -111,6 +115,13 @@ $(document).ready(() => {
         $(".icons #play").removeClass("disabled");
       }
       next_image();
+    } else if (e.target.id === "record") {
+      $(".icons #stop").remove();
+      console.log("%cDO IT ON YOU OWN RISK. YOU HAVE BEEN WARNED", "color:red;text-size:2.5rem;");
+      current_path = undefined;
+      recording = true;
+      auto = true;
+      next_image(0);
     }
   });
 
@@ -130,10 +141,8 @@ $(document).ready(() => {
 // direction = 0 -> reset
 // direction = "random" -> random
 let next_image = async (direction) => {
-  if (recording) {
-    if (current_path === undefined) {
-      current_path = 0;
-    } else {
+  if (recording){
+    if (current_path != undefined) {
       await capturer.stop();
       await capturer.save();
       console.log(`%cRecorded painting ${current_path + 1}/${names.length}`, "color:green;font-size:1rem;");
@@ -144,6 +153,10 @@ let next_image = async (direction) => {
       recording = false;
       return;
     }
+  }
+
+  if (current_path === undefined) {
+    current_path = 0;
   }
 
   if (direction === undefined) {
