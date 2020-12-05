@@ -28,6 +28,7 @@ let main = async () => {
   // load image pixels
   let pixels;
   pixels = await load_pixels(img_path, canvas_size);
+  resize_canvas(pixels.width, pixels.height);
 
   if (recording) {
     // fire up the capturer
@@ -40,7 +41,7 @@ let main = async () => {
   canvas = document.getElementById(sketch_id);
   if (canvas.getContext) {
     ctx = canvas.getContext("2d", {alpha: false});
-    sketch = new Sketch(canvas, ctx, pixels.width, pixels.height, 60);
+    sketch = new Sketch(canvas, ctx, 60);
     sketch.pixels = pixels.data;
     sketch.run();
   }
@@ -63,10 +64,130 @@ get_canvas_size = () => {
 };
 
 // resize canvas
-resize_canvas = (size) => {
+resize_canvas = (width, height) => {
   $(`canvas#${sketch_id}`).prop({
-    "width": size,
-    "height": size,
+    "width": width,
+    "height": height,
+  });
+};
+
+// loads next image in path
+// direction = none, 1 -> next
+// direction = -1 -> previous
+// direction = 0 -> reset
+// direction = "random" -> random
+let next_image = async (direction) => {
+  if (recording){
+    if (current_path != undefined) {
+      await capturer.stop();
+      await capturer.save();
+      console.log(`%cRecorded painting ${current_path + 1}/${names.length}`, "color:green;font-size:1rem;");
+    }
+
+    if (current_path === (names.length - 1)) {
+      console.log("%cAll paintings have been recorded", "color:red;font-size:1.5rem;");
+      recording = false;
+      return;
+    }
+  }
+
+  if (current_path === undefined) {
+    current_path = 0;
+  }
+
+  if (direction === undefined) {
+    direction = 1;
+  } else if (direction === "random") {
+    direction = random(0, 100000, true);
+  }
+
+  // load new image
+  current_path = (current_path + direction) % names.length;
+  img_path = dir + names[current_path];
+  // get canvas size
+  canvas_size = get_canvas_size();
+
+  if (sketch) {
+    // load pixels
+    let pixels;
+    pixels = await load_pixels(img_path, canvas_size);
+    // resize the canvas to match the new image
+    resize_canvas(pixels.width, pixels.height);
+    sketch.resized();
+
+    // put pixels inside sketch
+    sketch.pixels = pixels.data;
+
+  // fire up recorder again
+  if (recording) {
+    setup_capturer();
+  }
+
+    // reset sketch
+    sketch.reset();
+    // reload sketch
+    sketch.run();
+  }
+};
+
+let setup_capturer = () => {
+  capturer = new CCapture({
+                           format: "png",
+                           name: `${names[current_path].replace("-", " ").replace(".jpg", "")}-${current_path+1}`,
+                           autoSaveTime: 30,
+                           frameRate: 60
+                          });
+  console.log(`%c Started recording painting ${current_path + 1}/${names.length}`, "color:yellow;font-size:1rem;");
+};
+
+// load image and return pixels. img_src can be blob or path
+let load_pixels = (img_src, canvas_size) => {
+  return new Promise((resolve, reject) => {
+    let img = new Image();
+    img.src = img_src;
+    let image_data;
+
+    img.onload = () => {
+      let canvas, ctx;
+      let image_width, image_height;
+      // save image sizes
+      image_width = img.naturalWidth;
+      image_height = img.naturalHeight;
+      // calculate image resize
+      // biggest side and scale
+      let biggest, scl;
+      biggest = Math.max(image_width, image_height);
+      scl = canvas_size / biggest;
+
+
+      let seed = random(100000000, 999999999, true);
+      // create hidden canvas to load pixels
+      $(".container").append(`<canvas class="hidden" id="hidden" seed="${seed}"></canvas>`);
+      $("canvas#hidden").prop({"width": image_width * scl, "height": image_height * scl});
+      // load (hidden) canvas
+      canvas = document.getElementById("hidden");
+
+      if (canvas.getContext) {
+        ctx = canvas.getContext("2d", {alpha: false});
+        // anti alias
+        ctx.imageSmoothingQuality = "high";
+        // reset canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // set background
+        ctx.fillStyle = get_css_property("--background-color");
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        // draw image
+        ctx.drawImage(img, 0, 0, image_width, image_height, 0, 0, image_width * scl, image_height * scl);
+        // load pixels
+        image_data = ctx.getImageData(0, 0, image_width * scl, image_height * scl);
+      }
+      // delete canvas
+      $("canvas#hidden").remove();
+
+      // finally return pixels
+      resolve(image_data);
+    };
+    img.onerror = () => reject("error");
   });
 };
 
@@ -118,140 +239,7 @@ $(document).ready(() => {
       next_image(0);
     }
   });
-
-  // resize window event
-  $(window).resize(() => {
-    get_canvas_size();
-    resize_canvas();
-    if (sketch) {
-      sketch.resized();
-    }
-  });
 });
-
-// loads next image in path
-// direction = none, 1 -> next
-// direction = -1 -> previous
-// direction = 0 -> reset
-// direction = "random" -> random
-let next_image = async (direction) => {
-  if (recording){
-    if (current_path != undefined) {
-      await capturer.stop();
-      await capturer.save();
-      console.log(`%cRecorded painting ${current_path + 1}/${names.length}`, "color:green;font-size:1rem;");
-    }
-
-    if (current_path === (names.length - 1)) {
-      console.log("%cAll paintings have been recorded", "color:red;font-size:1.5rem;");
-      recording = false;
-      return;
-    }
-  }
-
-  if (current_path === undefined) {
-    current_path = 0;
-  }
-
-  if (direction === undefined) {
-    direction = 1;
-  } else if (direction === "random") {
-    direction = random(0, 100000, true);
-  }
-
-  // load new image
-  current_path = (current_path + direction) % names.length;
-  img_path = dir + names[current_path];
-  // get canvas size
-  canvas_size = get_canvas_size();
-  resize_canvas(canvas_size);
-
-  if (sketch) {
-    // load pixels
-    let pixels;
-    pixels = await load_pixels(img_path, canvas_size);
-
-    // put pixels inside sketch
-    sketch.pixels = pixels.data;
-    sketch.source_width = pixels.width;
-    sketch.source_height = pixels.height;
-
-  // fire up recorder again
-  if (recording) {
-    setup_capturer();
-  }
-
-    // reset sketch
-    sketch.reset();
-    // reload sketch
-    sketch.run();
-  }
-};
-
-let setup_capturer = () => {
-  capturer = new CCapture({
-                           format: "png",
-                           name: `${names[current_path].replace("-", " ").replace(".jpg", "")}-${current_path+1}`,
-                           autoSaveTime: 30,
-                           frameRate: 60
-                          });
-  console.log(`%c Started recording painting ${current_path + 1}/${names.length}`, "color:yellow;font-size:1rem;");
-};
-
-// load image and return pixels. img_src can be blob or path
-let load_pixels = (img_src, canvas_size) => {
-  return new Promise((resolve, reject) => {
-    let img = new Image();
-    img.src = img_src;
-    let image_data;
-
-    img.onload = () => {
-      let canvas, ctx;
-      let image_width, image_height;
-      // save image sizes
-      image_width = img.naturalWidth;
-      image_height = img.naturalHeight;
-      // calculate image resize
-      // biggest side and scale
-      let biggest, scl;
-      biggest = Math.max(image_width, image_height);
-      scl = canvas_size / biggest;
-
-      // create hidden canvas to load pixels
-      $(".container").append('<canvas class="hidden" id="hidden"></canvas>');
-      $("canvas#hidden").prop({"width": image_width * scl, "height": image_height * scl});
-      // load (hidden) canvas
-      canvas = document.getElementById("hidden");
-
-      // displacement values to center the image
-      let dx, dy;
-      dx = Math.floor((canvas_size - image_width * scl) / 2);
-      dy = Math.floor((canvas_size - image_height * scl) / 2);
-
-      if (canvas.getContext) {
-        ctx = canvas.getContext("2d", {alpha: false});
-        // anti alias
-        ctx.imageSmoothingQuality = "high";
-        // reset canvas
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        // set background
-        ctx.fillStyle = get_css_property("--background-color");
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        // draw image
-        ctx.drawImage(img, 0, 0, image_width, image_height, 0, 0, image_width * scl, image_height * scl);
-        // load pixels
-        image_data = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      }
-      // delete canvas
-      $("canvas#hidden").remove();
-
-      // finally return pixels
-      resolve(image_data);
-    };
-    img.onerror = () => reject("error");
-  });
-};
-
 
 class Circle {
   constructor(x, y, width, height, color, split_direction) {
@@ -348,13 +336,11 @@ class Circle {
 
 
 class Sketch {
-  constructor(canvas, context, source_width, source_height, fps) {
+  constructor(canvas, context, fps) {
     this.canvas = canvas;
     this.ctx = context;
     this.width = canvas.width;
     this.height = canvas.height;
-    this._source_width = source_width;
-    this._source_height = source_height;
 
     this.fps = fps || 60;
     this.fps_interval = 1000 / this.fps;
@@ -369,10 +355,6 @@ class Sketch {
     this._circles = [];
     // when this is true, all circles are of minimal size
     this._ended = false;
-
-    // displacement
-    this.dx = Math.floor((this.width - this._source_width) / 2);
-    this.dy = Math.floor((this.height - this._source_height) / 2);
 
     // save canvas in memory (currently unused, might delete later)
     this.savedData = new Image();
@@ -413,14 +395,6 @@ class Sketch {
     this._circles = [];
     // reset ended status
     this._ended = false;
-  }
-
-  save() {
-    this.savedData.src = this.canvas.toDataURL("image/png");
-  }
-
-  restore() {
-    this.ctx.drawImage(this.savedData, 0, 0);
   }
 
   resized() {
@@ -474,8 +448,6 @@ class Sketch {
       }
     }
 
-    //console.log(found)
-
     if (found) {
       // at least one has been found
       this.splitCircle(i);
@@ -525,7 +497,7 @@ class Sketch {
         nwidth = pos.width / 2;
         nheight = pos.height;
       }
-      let average_color = this.averageColor(nx - this.dx, ny - this.dy, nwidth, nheight, true);
+      let average_color = this.averageColor(nx, ny, nwidth, nheight, true);
       let new_circle = new Circle(nx, ny, nwidth, nheight, average_color, next_split_direction);
       this._circles.push(new_circle);
     }
@@ -573,10 +545,10 @@ class Sketch {
       // compute average image color
       let average_color = this.averageSource();
       //create a new rect
-      let new_rect = new Circle(this.dx, this.dy, this.width - this.dx * 2, this.height - this.dy * 2, average_color);
-      this._circles.push(new_rect);
+      let new_circle = new Circle(0, 0, this.width, this.height , average_color);
+      this._circles.push(new_circle);
       // the background color is now the color of the rect, not only for canvas but for the whole page
-      this.background = new_rect.color;
+      this.background = new_circle.color;
       set_css_property("--background-color", this.background);
       // create a favicon with the same color
       this.createFavicon(this.background);
@@ -675,7 +647,7 @@ class Sketch {
 
   getPixel(x, y) {
     let index, pixel;
-    index = y * this._source_width * 4 + x * 4;
+    index = y * this.width * 4 + x * 4;
     pixel = [];
     for (let i = 0; i < 4; i++) {
       pixel.push(this._pixels[index+i]);
@@ -712,7 +684,7 @@ class Sketch {
   }
 
   averageSource() {
-    return this.averageColor(0, 0, this._source_width, this._source_height);
+    return this.averageColor(0, 0, this.width, this.height);
   }
 
   get pixels() {
@@ -721,14 +693,6 @@ class Sketch {
 
   set pixels(pixels) {
     this._pixels = pixels;
-  }
-
-  set source_width(width) {
-    this._source_width = width;
-  }
-
-  set source_height(height) {
-    this._source_height = height;
   }
 
   get ended() {
