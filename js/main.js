@@ -4,9 +4,9 @@ let sketch, capturer;
 // sketch container id
 let sketch_id = "sketch";
 // make this true to start recording
-let recording = true;
+let recording = false;
 // make this true to go automatically
-let auto = true;
+let auto = false;
 // current path
 let current_path;
 // are we on mobile?
@@ -14,8 +14,8 @@ let mobile = false;
 
 // images names and dir
 const dir = "assets/paintings/";
-const names = ["american-gothic.jpg", "der-wanderer-uber-dem-nebelmeer.jpg", "persistence-of-memory.jpg", "crying-girl.jpg", "blue-poles-number-11.jpg", "piet-modrian-composition-2-with-red-blue-and-yellow.jpg", "creazione-di-adamo.jpg", "the-tower-of-babel.jpg", "el-beso.jpg", "rebel-with-many-causes.jpg", "great-wave.jpg", "gioconda.jpg", "napoleon-crossing-the-alps.jpg", "nascita-di-venere.jpg", "the-kiss.jpg", "skrik.jpg", "impression-soleil-levant.jpg", "bouilloire-et-fruits.jpg", "a-sunday-on-la-grande-jatte.jpg", "the-son-of-men.jpg", "flying-copper.jpg", "guernica.jpg", "starry-night.jpg", "composition-8.jpg", "nighthawks.jpg"];
-
+const names = ["a-sunday-on-la-grande-jatte.jpg", "american-gothic.jpg", "blue-poles-number-11.jpg", "bouilloire-et-fruits.jpg", "composition-8.jpg", "creazione-di-adamo.jpg", "crying-girl.jpg", "der-wanderer-uber-dem-nebelmeer.jpg", "el-beso.jpg", "flying-copper.jpg", "gioconda.jpg", "great-wave.jpg", "guernica.jpg", "impression-soleil-levant.jpg", "napoleon-crossing-the-alps.jpg", "nascita-di-venere.jpg", "nighthawks.jpg", "persistence-of-memory.jpg", "piet-modrian-composition-2-with-red-blue-and-yellow.jpg", "rebel-with-many-causes.jpg", "skrik.jpg", "starry-night.jpg", "the-kiss.jpg", "the-son-of-men.jpg", "the-tower-of-babel.jpg"];
+// main function
 let main = async () => {
   let canvas_size, img_path;
   // get correct size and resize canvas
@@ -54,6 +54,7 @@ let main = async () => {
   }
 };
 
+// calculate optimal canvas size
 get_canvas_size = () => {
   let canvas_size;
   // adaptive size
@@ -70,8 +71,8 @@ get_canvas_size = () => {
   return canvas_size;
 };
 
+// resize canvas
 resize_canvas = (size) => {
-  // resize canvas
   $(`canvas#${sketch_id}`).prop({
     "width": size,
     "height": size,
@@ -84,24 +85,32 @@ $(document).ready(() => {
 
   // disable stop
   $(".icons #stop").addClass("disabled");
+
   $(".icons img").click((e) => {
-    console.log(e.target.id);
 
     if (e.target.className === "disabled") {
+      // if the button is disabled, a click won't affect the output
       return;
     }
 
     if (e.target.id === "play") {
+      // play button was pressed
       auto = true;
+      // disable play and enable stop
       $(".icons #play").addClass("disabled");
       $(".icons #stop").removeClass("disabled");
     } else if (e.target.id === "stop") {
+      // stop button was pressed
       auto = false;
+      // disable stop and enable play
       $(".icons #stop").addClass("disabled");
       $(".icons #play").removeClass("disabled");
     } else if (e.target.id === "next") {
+      // next button was pressed
       if (auto) {
+        // if the sketch was in auto mode, stop it
         auto = false;
+        // disable stop and enable play
         $(".icons #stop").addClass("disabled");
         $(".icons #play").removeClass("disabled");
       }
@@ -110,6 +119,7 @@ $(document).ready(() => {
   });
 });
 
+// resize window event
 $(window).resize(() => {
   get_canvas_size();
   resize_canvas();
@@ -119,35 +129,33 @@ $(window).resize(() => {
 });
 
 // loads next image in path
-// dir = none, 1 -> next
-// dir = -1 -> previous
-// dir = 0 -> rest
-let next_image = (dir) => {
-  // stop sketch (if any)
-  if (sketch) {
-    // stop and save recording (if any)
-    if (capturer) {
-
-      capturer = null;
-    }
-
-    sketch = null;
-
-    // remove old canvas
-    $(`#${sketch_id}`).remove();
-    // create a new canvas
-    $(`.container`).append(`<canvas id="${sketch_id}"></canvas>`);
+// direction = none, 1 -> next
+// direction = -1 -> previous
+// direction = 0 -> reset
+// direction = "random" -> random
+let next_image = async (direction) => {
+  if (direction === undefined) {
+    direction = 1;
+  } else if (direction === "random") {
+    direction = random(0, 100000, true);
   }
 
-  if (dir === undefined) {
-    dir = 1;
-  } else if (dir === "random") {
-    dir = random(0, 100000, true);
-  }
-
-  current_path = (current_path + dir) % names.length;
-
-  main();
+  // load new image
+  current_path = (current_path + direction) % names.length;
+  img_path = dir + names[current_path];
+  // get canvas size
+  canvas_size = get_canvas_size();
+  // load pixels
+  let pixels;
+  pixels = await load_pixels(img_path, canvas_size);
+  // put pixels inside sketch
+  sketch.pixels = pixels.data;
+  sketch.source_width = pixels.width;
+  sketch.source_height = pixels.height;
+  // reset sketch
+  sketch.reset();
+  // reload sketch
+  sketch.run();
 };
 
 // load image and return pixels. img_src can be blob or path
@@ -349,6 +357,11 @@ class Sketch {
     this.draw();
   }
 
+  reset() {
+    // reset circles array
+    this._circles = [];
+  }
+
   save() {
     this.savedData.src = this.canvas.toDataURL("image/png");
   }
@@ -462,7 +475,6 @@ class Sketch {
 
   draw(e) {
     // time elapsed since last frame was rendered
-
     if (!recording) {
       let diff;
       diff = performance.now() - this.then;
@@ -473,7 +485,7 @@ class Sketch {
       }
     }
 
-    if (!this.ended || this._circles.length == 1) {
+    if (!this.ended && this._circles.length == 1) {
       // load the next frame
       window.requestAnimationFrame(this.draw.bind(this));
     } else if (this.ended && (auto || recording)) {
@@ -521,7 +533,11 @@ class Sketch {
       let circle_pos;
       circle_pos = c.pos;
 
-      if (c.pos.r > 25) {
+      if (this._circles.length === 1) {
+        this.ctx.shadowOffsetX = 5;
+        this.ctx.shadowOffsetY = 5;
+        this.ctx.shadowBlur = 15;
+      }else if (c.pos.r > 25) {
         this.ctx.shadowOffsetX = 3;
         this.ctx.shadowOffsetY = 3;
         this.ctx.shadowBlur = 5;
@@ -573,7 +589,6 @@ class Sketch {
       for (let i = 0; i < Math.min(iterations, available_circles.length); i++) {
          let random_index, circles_index;
           random_index = random(0, available_circles.length - 1, true);
-          //console.log(random_index, available_circles.length)
           circles_index = this._circles.indexOf(available_circles[random_index]);
           if (circles_index === -1) {
             // this should not happen...
@@ -588,7 +603,6 @@ class Sketch {
     if (all_min_size && !this.ended) {
       // the sketch has ended
       this._ended = true;
-      console.log("ended");
     }
   }
 
@@ -644,6 +658,14 @@ class Sketch {
 
   set pixels(pixels) {
     this._pixels = pixels;
+  }
+
+  set source_width(width) {
+    this._source_width = width;
+  }
+
+  set source_height(height) {
+    this._source_height = height;
   }
 
   get ended() {
