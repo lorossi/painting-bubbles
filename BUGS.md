@@ -1,0 +1,1 @@
+- loading more photos in sequence will not work properly as their size ration will be wrong. As such, images will be distorted.
