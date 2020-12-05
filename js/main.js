@@ -15,6 +15,7 @@ let mobile = false;
 // images names and dir
 const dir = "assets/paintings/";
 const names = ["a-sunday-on-la-grande-jatte.jpg", "american-gothic.jpg", "blue-poles-number-11.jpg", "bouilloire-et-fruits.jpg", "composition-8.jpg", "creazione-di-adamo.jpg", "crying-girl.jpg", "der-wanderer-uber-dem-nebelmeer.jpg", "el-beso.jpg", "flying-copper.jpg", "gioconda.jpg", "great-wave.jpg", "guernica.jpg", "impression-soleil-levant.jpg", "napoleon-crossing-the-alps.jpg", "nascita-di-venere.jpg", "nighthawks.jpg", "persistence-of-memory.jpg", "piet-modrian-composition-2-with-red-blue-and-yellow.jpg", "rebel-with-many-causes.jpg", "skrik.jpg", "starry-night.jpg", "the-kiss.jpg", "the-son-of-men.jpg", "the-tower-of-babel.jpg"];
+
 // main function
 let main = async () => {
   let canvas_size, img_path;
@@ -30,6 +31,7 @@ let main = async () => {
   }
   img_path = dir + names[current_path];
 
+  // load image pixels
   let pixels;
   pixels = await load_pixels(img_path, canvas_size);
 
@@ -44,6 +46,7 @@ let main = async () => {
                             });
   }
 
+  // create canvas and sketch
   let canvas, ctx;
   canvas = document.getElementById(sketch_id);
   if (canvas.getContext) {
@@ -67,7 +70,6 @@ get_canvas_size = () => {
   }
 
   mobile = get_css_property("--mobile");
-
   return canvas_size;
 };
 
@@ -81,13 +83,14 @@ resize_canvas = (size) => {
 
 
 $(document).ready(() => {
+  console.clear();
+  console.log("%cSnooping around? Check the repo! https://github.com/lorossi/painting-bubbles", "color:white;font-size:1.5rem;");
   main();
 
   // disable stop
   $(".icons #stop").addClass("disabled");
 
-  $(".icons img").click((e) => {
-
+  $(".icons div").click((e) => {
     if (e.target.className === "disabled") {
       // if the button is disabled, a click won't affect the output
       return;
@@ -96,6 +99,8 @@ $(document).ready(() => {
     if (e.target.id === "play") {
       // play button was pressed
       auto = true;
+      // start drawing again
+      sketch.draw();
       // disable play and enable stop
       $(".icons #play").addClass("disabled");
       $(".icons #stop").removeClass("disabled");
@@ -134,6 +139,10 @@ $(window).resize(() => {
 // direction = 0 -> reset
 // direction = "random" -> random
 let next_image = async (direction) => {
+  if (recording && current_path === names.length - 1) {
+    console.log("%cAll paintings have been recorded", "color:red;font-size:1.5rem;");
+    return;
+  }
   if (direction === undefined) {
     direction = 1;
   } else if (direction === "random") {
@@ -224,15 +233,21 @@ class Circle {
     this._r = Math.min(this.width, this.height) / 2; // radius
     this._color = color;
 
-    this.min_radius = 4;
+    if (mobile) {
+      this.min_radius = 2;
+    } else {
+      this.min_radius = 4;
+    }
+
+    // check if the circle is already of the minimum size
     this._min_size = this.r < this.min_radius;
-    this._recently_split = true;
+    // the circle's age is 0
     this._age_count = 0;
 
     if (this._r < 10) {
-        this._split_age = 1;
+      this._split_age = 1;
     } else {
-        this._split_age = 2;
+      this._split_age = 3;
     }
 
 
@@ -244,17 +259,17 @@ class Circle {
         this._split_direction = "vertical";
       }
       // let's also set an higher life
-      this._split_age = 10;
+      this._split_age = 20;
     } else {
       this._split_direction = split_direction;
     }
 
     if (mobile) {
       // we're on mobile, let's not bore our users to death
-      this._split_age = 2;
-      this._recently_split = false;
+      this._split_age = 0;
+      this._age_count = 0;
     }
-}
+  }
 
   get pos() {
     return {
@@ -290,23 +305,13 @@ class Circle {
     return this._split_direction;
   }
 
-  get recently_split() {
-    // has the
-    this._recently_split = this._age_count < this._split_age;
-    return this._recently_split;
-  }
-
-  set recently_split(bool) {
-    if (this._age_count >= this._split_age) {
-      this._recently_split = bool;
-      this._age_count = 0;
-    } else {
-      this._age_count++;
-    }
-  }
-
   get min_size() {
     return this._min_size;
+  }
+
+  get old_enough() {
+    this._age_count++;
+    return this._age_count >= this._split_age;
   }
 
 }
@@ -403,20 +408,19 @@ class Sketch {
   }
 
   searchCircle(x, y) {
-    let found, pos, i, recently_split;
-
+    let found, pos, i;
     found = false;
     for (i = 0; i < this._circles.length; i++) {
       pos = this._circles[i].pos;
       if (x >= pos.x && y >= pos.y && x <= pos.x + pos.width && y <= pos.y + pos.height && !this._circles[i].min_size) {
-        recently_split = this._circles[i].recently_split;
-        if (recently_split) {
-          this._circles[i].recently_split = false;
+        if (this._circles[i].old_enough) {
           found = true;
           break;
         }
       }
     }
+
+    //console.log(found)
 
     if (found) {
       // at least one has been found
@@ -484,10 +488,10 @@ class Sketch {
       }
     }
 
-    if (!this.ended && this._circles.length == 1) {
+    if ((!this.ended && this._circles.length == 1) || auto) {
       // load the next frame
       window.requestAnimationFrame(this.draw.bind(this));
-    } else if (this.ended && (auto || recording)) {
+    } else if (this.ended &&  recording) {
         // if in auto or recording, load another image
         // if recording, stop and save
       if (capturer) {
