@@ -32,13 +32,7 @@ let main = async () => {
   if (recording) {
     // fire up the capturer
     // currently generating JPG files, will change later into gifs
-    capturer = new CCapture({
-                             format: "png",
-                             name: `${names[current_path].replace("-", " ").replace(".jpg", "")}-${current_path+1}`,
-                             autoSaveTime: 30,
-                             frameRate: 60
-                            });
-    console.log(`%c Started recording painting ${current_path + 1}/${names.length}`, "color:yellow;font-size:1rem;");
+    setup_capturer();
   }
 
   // create canvas and sketch
@@ -184,13 +178,7 @@ let next_image = async (direction) => {
 
   // fire up recorder again
   if (recording) {
-    capturer = new CCapture({
-                             format: "png",
-                             name: `${names[current_path].replace("-", " ").replace(".jpg", "")}-${current_path+1}`,
-                             autoSaveTime: 30,
-                             frameRate: 60
-                            });
-    console.log(`%c Started recording painting ${current_path + 1}/${names.length}`, "color:yellow;font-size:1rem;");
+    setup_capturer();
   }
 
     // reset sketch
@@ -198,6 +186,16 @@ let next_image = async (direction) => {
     // reload sketch
     sketch.run();
   }
+};
+
+let setup_capturer = () => {
+  capturer = new CCapture({
+                           format: "png",
+                           name: `${names[current_path].replace("-", " ").replace(".jpg", "")}-${current_path+1}`,
+                           autoSaveTime: 30,
+                           frameRate: 60
+                          });
+  console.log(`%c Started recording painting ${current_path + 1}/${names.length}`, "color:yellow;font-size:1rem;");
 };
 
 // load image and return pixels. img_src can be blob or path
@@ -526,7 +524,7 @@ class Sketch {
       }
     }
 
-    if (!this._ended && (this._circles.length == 1 || recording)) {
+    if (!this._ended && (this._circles.length == 1 || recording || auto)) {
       // load the next frame
       window.requestAnimationFrame(this.draw.bind(this));
     } else if (this._ended && recording) {
