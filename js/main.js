@@ -412,10 +412,9 @@ class Sketch {
         recently_split = this._circles[i].recently_split;
         if (recently_split) {
           this._circles[i].recently_split = false;
+          found = true;
           break;
         }
-        found = true;
-        break;
       }
     }
 
