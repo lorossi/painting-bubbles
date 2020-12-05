@@ -4,9 +4,9 @@ let sketch, capturer;
 // sketch container id
 let sketch_id = "sketch";
 // make this true to start recording
-let recording = true;
+let recording = false;
 // make this true to go automatically
-let auto = true;
+let auto = false;
 // current path
 let current_path;
 // are we on mobile?
@@ -18,6 +18,7 @@ const names = ["a-sunday-on-la-grande-jatte.jpg", "american-gothic.jpg", "blue-p
 
 // main function
 let main = async () => {
+  // load next image
   next_image(0);
 
   // load image pixels
