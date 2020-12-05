@@ -38,6 +38,11 @@ body {
   display: none;
 }
 
+.disabled {
+  filter: grayscale(1);
+  opacity: 0.7;
+}
+
 .credits {
   opacity: 0.25;
   position: absolute;
@@ -52,6 +57,22 @@ body {
 
 .credits a:hover {
   font-style: italic;
+}
+
+.icons {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 30vh;
+  width: 5vw;
+  position: absolute;
+  left: 1vw;
+  top: 35vh;
+}
+
+.icons img {
+  width: 5vw;
+  height: 5vw;
 }
 
 @media only screen and (max-width: 480px) and (min-width: 0px) {

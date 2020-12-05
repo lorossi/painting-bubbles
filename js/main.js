@@ -4,9 +4,9 @@ let sketch, capturer;
 // sketch container id
 let sketch_id = "sketch";
 // make this true to start recording
-let recording = false;
+let recording = true;
 // make this true to go automatically
-let auto = false;
+let auto = true;
 // current path
 let current_path;
 // are we on mobile?
@@ -81,6 +81,33 @@ resize_canvas = (size) => {
 
 $(document).ready(() => {
   main();
+
+  // disable stop
+  $(".icons #stop").addClass("disabled");
+  $(".icons img").click((e) => {
+    console.log(e.target.id);
+
+    if (e.target.className === "disabled") {
+      return;
+    }
+
+    if (e.target.id === "play") {
+      auto = true;
+      $(".icons #play").addClass("disabled");
+      $(".icons #stop").removeClass("disabled");
+    } else if (e.target.id === "stop") {
+      auto = false;
+      $(".icons #stop").addClass("disabled");
+      $(".icons #play").removeClass("disabled");
+    } else if (e.target.id === "next") {
+      if (auto) {
+        auto = false;
+        $(".icons #stop").addClass("disabled");
+        $(".icons #play").removeClass("disabled");
+      }
+      next_image();
+    }
+  });
 });
 
 $(window).resize(() => {
@@ -88,41 +115,6 @@ $(window).resize(() => {
   resize_canvas();
   if (sketch) {
     sketch.resized();
-  }
-});
-
-
-// key controls
-// right arrow -> next image
-// left arrow -> previous image
-// spacebar -> reset image
-// enter -> toggle auto/manual mode
-// r -> go to random painting
-// e -> start/stop recording
-$(document).keydown((e) => {
-  if (e.which === 37) {
-    // key arrow left
-    next_image(-1);
-  } else if (e.which === 39)  {
-    // key arrow right
-    next_image(1);
-  } else if (e.which === 32) {
-    // key spacebar
-    next_image(0);
-  } else if (e.which === 13) {
-    // key enter
-    auto = !auto;
-  } else if (e.which === 82) {
-    // key R
-    let random_dir;
-    next_image("random");
-  } else if (e.which === 69) {
-    // key e
-    // toggle auto and recording
-    recording = !recording;
-    auto = recording;
-    // reset current image
-    next_image(0);
   }
 });
 
@@ -135,9 +127,12 @@ let next_image = (dir) => {
   if (sketch) {
     // stop and save recording (if any)
     if (capturer) {
-      capturer.stop();
-      capturer.save();
+
+      capturer = null;
     }
+
+    sketch = null;
+
     // remove old canvas
     $(`#${sketch_id}`).remove();
     // create a new canvas
@@ -340,9 +335,9 @@ class Sketch {
     this.savedData = new Image();
 
     // event listener
-    window.addEventListener('mousemove', this.mouseMoved.bind(this), false);
-    window.addEventListener('touchstart', this.touchMoved.bind(this), false);
-    window.addEventListener('touchmove', this.touchMoved.bind(this), false);
+    this.canvas.addEventListener('mousemove', this.mouseMoved.bind(this), false);
+    this.canvas.addEventListener('touchstart', this.touchMoved.bind(this), false);
+    this.canvas.addEventListener('touchmove', this.touchMoved.bind(this), false);
   }
 
   run() {
@@ -472,7 +467,6 @@ class Sketch {
       let diff;
       diff = performance.now() - this.then;
       if (diff < this.fps_interval && auto) {
-        console.log("TOO SOON");
         // not enough time has passed, so we request next frame and give up on this render
         window.requestAnimationFrame(this.draw.bind(this));
         return;
@@ -483,9 +477,14 @@ class Sketch {
       // load the next frame
       window.requestAnimationFrame(this.draw.bind(this));
     } else if (this.ended && (auto || recording)) {
-      // if in auto or recording, load another
-        next_image();
-        return;
+        // if in auto or recording, load another image
+        // if recording, stop and save
+      if (capturer) {
+        capturer.stop();
+        capturer.save();
+      }
+      next_image();
+      return;
       // otherwise, the user has to do so manually
     }
 
