@@ -73,7 +73,7 @@ body {
   left: 1vw;
   top: 0;
   opacity: 0.5;
-  font-size: 1.5rem;
+  font-size: 3rem;
   text-shadow: 3px 3px 5px var(--text-shadow-color);
 }
 
