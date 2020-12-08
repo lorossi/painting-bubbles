@@ -310,6 +310,20 @@ class Sketch {
         all_min_size = false;
       }
     });
+
+    // draw watermark
+    if (recording) {
+      let textsize = 24;
+      let textwidth;
+      this.ctx.save();
+      this.ctx.fillStyle = "#0000007f";
+      this.ctx.font = `${textsize}px AvenirRoman`;
+      textwidth = this.ctx.measureText("Lorenzo Rossi").width;
+      this.ctx.fillText('Lorenzo Rossi', textwidth * 0.25, 1.25 * textsize);
+      textwidth = this.ctx.measureText("www.lorenzoros.si").width;
+      this.ctx.fillText("www.lorenzoros.si", this.width - textwidth * 1.25, this.height - 0.25 * textsize);
+      this.ctx.restore();
+    }
     this.ctx.restore();
 
     // save frame if recording

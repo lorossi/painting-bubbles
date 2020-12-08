@@ -12,7 +12,7 @@ let get_index_from_xy = (x, y, width) => {
 };
 
 let get_css_property = (property) => {
-  let css_property = $getComputedStyle(document.documentElement).getPropertyValue(property);
+  let css_property = getComputedStyle(document.documentElement).getPropertyValue(property);
   css_property = css_property.split(" ").join("");
 
   if (css_property === "true") {

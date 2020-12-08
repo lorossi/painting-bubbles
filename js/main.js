@@ -81,12 +81,41 @@ resize_canvas = (width, height) => {
 // direction = -1 -> previous
 // direction = 0 -> reset
 // direction = "random" -> random
+// direction = "this" -> reset this
 let next_image = async (direction) => {
-  if (recording){
+  if (recording && capturer){
     recording = false;
+
+    // add waiting banner
+    let waiting = $('<div class="wait">The video is being generated, wait a while....<br>Reload the page after the download is complete!</div>');
+    $("body").append(waiting);
+
     await capturer.stop();
-    await capturer.save();
-    console.log(`%cRecorded painting ${current_path + 1}`, "color:green;font-size:1rem;");
+    await capturer.save(async (blob) => {
+      let filename = names[current_path].replace("-", " ").replace(".jpg", "");
+
+      new Promise((resolve, reject) => {
+      let reader = new FileReader();
+      reader.readAsDataURL(blob);
+      reader.onload = () => {
+        // create and fill element
+        let element = $('<a class="hidden"></a>');
+        $(element).attr("href", reader.result);
+        $(element).attr("download", filename);
+        $("body").append(element);
+        $(element)[0].click("click");
+        $(element).remove();
+        resolve("image created");
+      };
+      reader.onerror = () => reject("error while creating image");
+      });
+
+      // delete waiting banner
+      $(waiting).remove();
+      // re enable record
+      $(".icons #record").removeClass("disabled");
+
+    });
   }
 
   if (current_path === undefined) {
@@ -97,6 +126,8 @@ let next_image = async (direction) => {
     direction = 1;
   } else if (direction === "random") {
     direction = random(0, 100000, true);
+  } else if (direction === "keep") {
+    direction = 0;
   }
 
   // load new image
@@ -118,6 +149,7 @@ let next_image = async (direction) => {
 
   // fire up recorder again
   if (recording) {
+    console.log("%cRecorded painting started", "color:green;font-size:1rem;");
     setup_capturer();
   }
 
@@ -137,7 +169,7 @@ let setup_capturer = () => {
                            autoSaveTime: 30,
                            frameRate: 60
                           });
-  console.log(`%c Started recording painting ${current_path + 1}/${names.length}`, "color:yellow;font-size:1rem;");
+  console.log("%c Started recording painting", "color:yellow;font-size:1rem;");
 };
 
 // load image and return pixels. img_src can be blob or path
@@ -216,8 +248,12 @@ $(document).ready(() => {
       $(".icons #play").addClass("disabled");
       $(".icons #stop").removeClass("disabled");
     } else if (e.target.id === "stop") {
+      if (recording) {
+        next_image("this");
+      }
       // stop button was pressed
       auto = false;
+      recording = false;
       // disable stop and enable play
       $(".icons #stop").addClass("disabled");
       $(".icons #play").removeClass("disabled");
@@ -232,12 +268,14 @@ $(document).ready(() => {
       }
       next_image();
     } else if (e.target.id === "record") {
-      $(".icons #stop").remove();
+      // hide record and show stop
+      $(".icons #record").addClass("disabled");
+      $(".icons #stop").removeClass("disabled");
+
       console.log("%cDO IT ON YOU OWN RISK. YOU HAVE BEEN WARNED", "color:red;text-size:2.5rem;");
-      current_path = undefined;
       recording = true;
       auto = true;
-      next_image(0);
+      next_image("keep");
     }
   });
 });

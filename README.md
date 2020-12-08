@@ -19,7 +19,8 @@ The script loads an image from the `assets/paintings` folder and puts it in a hi
 It's nothing too hard but it took me a while to get used to the `async` quirks of the ECMA6 language.
 
 ## Recording
-There's an hidden feature that lets your browser record the completion of a painting. *In order to unlock that* you have to open *inspect element* and set the visibility of the `div` with `id=record` to `visible`. That hidden `div` is located inside the `div` with `class="icons"`.
+There's a feature that lets your browser record the completion of a painting. It will take a long time and there's no way to stop it before completion.
+So *BE CAREFUL* when you use that.
 
 ## Examples
 **TODO**
