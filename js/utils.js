@@ -12,7 +12,7 @@ let get_index_from_xy = (x, y, width) => {
 };
 
 let get_css_property = (property) => {
-  let css_property = $(":root").css(property);
+  let css_property = $getComputedStyle(document.documentElement).getPropertyValue(property);
   css_property = css_property.split(" ").join("");
 
   if (css_property === "true") {
@@ -33,7 +33,7 @@ let get_css_property = (property) => {
 };
 
 let set_css_property = (property, value) => {
-  let css_property = $(":root").css(property, value);
+  document.documentElement.style.setProperty(property, value);
 };
 
 let random = (min, max, int) => {
@@ -64,7 +64,7 @@ let get_mouse_pos = (canvas, e) => {
 };
 
 let get_touch_pos = (canvas, e) => {
-  let rect = canvas.getBoundingClientRect(); 
+  let rect = canvas.getBoundingClientRect();
   return {
     x: e.targetTouches[0].clientX - rect.left,
     y: e.targetTouches[0].clientY - rect.top
