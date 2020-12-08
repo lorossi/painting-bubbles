@@ -19,6 +19,7 @@ body {
   background-color: var(--background-color);
   font-family: AvenirRoman;
   color: black;
+  overflow: hidden;
 }
 
 .portrait {
@@ -86,10 +87,6 @@ body {
   margin-bottom: 0.5rem;
   border-radius: 5px;
   border: 2px solid #0000007f;
-}
-
-.icons #record {
-  display: none;
 }
 
 .hint {

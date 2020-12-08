@@ -60,6 +60,8 @@ class Sketch {
     this._circles = [];
     // reset ended status
     this._ended = false;
+    // reset split circles
+    this._split_circles = 0;
   }
 
   resized() {
@@ -316,24 +318,31 @@ class Sketch {
     }
 
     // if the sketch is in auto mode, pop a circle
-    if (auto && !all_min_size) {
+    if ((auto || recording) && !all_min_size) {
       // circles big enough to be split
       let available_circles;
       available_circles = this._circles.filter(c => !c.min_size);
       available_circles = available_circles.sort((a, b) => (b.r - a.r));
-      available_circles = available_circles.slice(0, this.auto_to_keep);
 
+      if (available_circles.length > 8) {
+        available_circles = available_circles.slice(0, this.auto_to_keep);
+      } else {
+        available_circles = available_circles.slice(0, 2);
+      }
 
       let iterations;
-      if (this._split_circles < 1500) {
-        iterations = Math.floor(this._split_circles / 300);
+
+      if (this._split_circles < 500) {
+        iterations = Math.floor(this._split_circles / 250);
         iterations = iterations <= 0 ? 1 : iterations;
-      } else if (this._split_circles < 3000) {
-        iterations =  Math.floor(this._circles.length / 75);
-      } else if (this._split_circles < 4500){
-        iterations =  Math.floor(this._circles.length / 50);
+      } else if (this._split_circles < 1000) {
+        iterations = Math.floor(this._circles.length / 200);
+      } else if (this._split_circles < 2000){
+        iterations = Math.floor(this._circles.length / 150);
+      } else if (this._split_circles < 3000){
+        iterations = Math.floor(this._circles.length / 100);
       } else {
-        iterations =  Math.floor(this._circles.length / 15);
+        iterations = Math.floor(this._circles.length / 50);
       }
 
       for (let i = 0; i < iterations; i++) {

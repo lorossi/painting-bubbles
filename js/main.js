@@ -14,7 +14,7 @@ let mobile = false;
 
 // images names and dir
 const dir = "assets/paintings/";
-const names = ["a-sunday-on-la-grande-jatte.jpg", "american-gothic.jpg", "blue-poles-number-11.jpg", "bouilloire-et-fruits.jpg", "composition-8.jpg", "creazione-di-adamo.jpg", "crying-girl.jpg", "der-wanderer-uber-dem-nebelmeer.jpg", "el-beso.jpg", "flying-copper.jpg", "gioconda.jpg", "great-wave.jpg", "guernica.jpg", "impression-soleil-levant.jpg", "napoleon-crossing-the-alps.jpg", "nascita-di-venere.jpg", "nighthawks.jpg", "persistence-of-memory.jpg", "piet-modrian-composition-2-with-red-blue-and-yellow.jpg", "rebel-with-many-causes.jpg", "skrik.jpg", "starry-night.jpg", "the-kiss.jpg", "the-son-of-men.jpg", "the-tower-of-babel.jpg"];
+const names = ["a-sunday-on-la-grande-jatte.jpg", "american-gothic.jpg", "arnolfini-portrait.jpg", "bouilloire-et-fruits.jpg", "composition-8.jpg", "crying-girl.jpg", "der-wanderer-uber-dem-nebelmeer.jpg", "el-beso.jpg", "flying-copper.jpg", "gioconda.jpg", "great-wave.jpg", "guernica.jpg", "hunters-in-the-snow.jpg", "impression-soleil-levant.jpg", "la-libert\u00e8-guidant-le-peuple.jpg", "meisje-met-de-parel.jpg", "napoleon-crossing-the-alps.jpg", "nascita-di-venere.jpg", "nighthawks.jpg", "persistence-of-memory.jpg", "piet-modrian-composition-2-with-red-blue-and-yellow.jpg", "rebel-with-many-causes.jpg", "skrik.jpg", "starry-night.jpg", "sunflowers.jpg", "the-kiss.jpg", "the-son-of-men.jpg", "the-tower-of-babel.jpg", "the-water-lily-pond.jpg"];
 
 // main function
 let main = async () => {
@@ -83,17 +83,10 @@ resize_canvas = (width, height) => {
 // direction = "random" -> random
 let next_image = async (direction) => {
   if (recording){
-    if (current_path != undefined) {
-      await capturer.stop();
-      await capturer.save();
-      console.log(`%cRecorded painting ${current_path + 1}/${names.length}`, "color:green;font-size:1rem;");
-    }
-
-    if (current_path === (names.length - 1)) {
-      console.log("%cAll paintings have been recorded", "color:red;font-size:1.5rem;");
-      recording = false;
-      return;
-    }
+    recording = false;
+    await capturer.stop();
+    await capturer.save();
+    console.log(`%cRecorded painting ${current_path + 1}`, "color:green;font-size:1rem;");
   }
 
   if (current_path === undefined) {
@@ -137,7 +130,9 @@ let next_image = async (direction) => {
 
 let setup_capturer = () => {
   capturer = new CCapture({
-                           format: "png",
+                           format: 'gif',
+                           workersPath: 'js/',
+                           motionBlurFrames: 1,
                            name: `${names[current_path].replace("-", " ").replace(".jpg", "")}-${current_path+1}`,
                            autoSaveTime: 30,
                            frameRate: 60
