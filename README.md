@@ -7,7 +7,7 @@ Some say that *Michelangelo* saw the sculpture inside a marble block and all he 
 
 Well, the main problem here is that I cannot paint. Or draw, for all that matters. But the idea still stuck with me.
 
-It took a while but one night where I couldn't sleep I started thinking about how I could make this work in real life. The next morning I jumped to the PC *(yay, quarantine!)* and started coding it. Many days later, the project came to life and started working 100%.
+It took a while but one night where I couldn't sleep I started thinking about how I could make this work in real life. The next morning I jumped on the PC *(yay, quarantine!)* and started coding it. Many days later, the project came to life and started working 100%.
 
 *How do I use it?*
 
@@ -23,13 +23,13 @@ It's nothing too hard but it took me a while to get used to the `async` quirks o
 ### Recording
 There's a feature that lets your browser record the completion of a painting in the form of a gif animation. It might take a long time, so hang tight and wait.
 
-*BE CAREFUL* when you use that.
+**BE CAREFUL** when you use that.
 
 ## Rendered videos
 You can find some output videos on my [Instagram account](https://www.instagram.com/lorossi97/), in higher quality on [Vimeo](https://vimeo.com/489007379) or inside the *output* folder.
 
 ## Examples
-Some of the produced gifs
+*Some of the produced gifs:*
 ![La gioconda](https://github.com/lorossi/painting-bubbles/blob/master/output/gifs/gioconda.gif?raw=true)
 ![The great wave](https://github.com/lorossi/painting-bubbles/blob/master/output/gifs/great-wave.gif?raw=true)
 ![Rebel with many causes](https://github.com/lorossi/painting-bubbles/blob/master/output/gifs/rebel-with-many-causes.gif?raw=true)
