@@ -14,7 +14,7 @@ class Circle {
     if (mobile) {
       this.min_radius = 2;
     } else {
-      this.min_radius = 4;
+      this.min_radius = 2;
     }
 
     // check if the circle is already of the minimum size

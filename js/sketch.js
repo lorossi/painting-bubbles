@@ -312,7 +312,7 @@ class Sketch {
     });
 
     // draw watermark
-    if (recording) {
+    if (recording && false) {
       let textsize = 24;
       let textwidth;
       this.ctx.save();

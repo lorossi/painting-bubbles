@@ -4,9 +4,9 @@ let sketch, capturer;
 // sketch container id
 let sketch_id = "sketch";
 // make this true to start recording
-let recording = false;
+let recording = true;
 // make this true to go automatically
-let auto = false;
+let auto = true;
 // current path
 let current_path;
 // are we on mobile?
@@ -84,7 +84,7 @@ resize_canvas = (width, height) => {
 // direction = "this" -> reset this
 let next_image = async (direction) => {
   if (recording && capturer){
-    recording = false;
+    //recording = false;
 
     // add waiting banner
     let waiting = $('<div class="wait">The video is being generated, wait a while....<br>Reload the page after the download is complete!</div>');
@@ -118,11 +118,18 @@ let next_image = async (direction) => {
     });
   }
 
+  if (recording && current_path === names.length - 1) {
+    console.log("FINISHED ALL");
+    return
+  }
+
   if (current_path === undefined) {
     current_path = 0;
   }
 
-  if (direction === undefined) {
+  if (direction === undefined && recording) {
+    direction = 0;
+  } else if (direction === undefined) {
     direction = 1;
   } else if (direction === "random") {
     direction = random(0, 100000, true);
@@ -162,7 +169,7 @@ let next_image = async (direction) => {
 
 let setup_capturer = () => {
   capturer = new CCapture({
-                           format: 'gif',
+                           format: 'png',
                            workersPath: 'js/',
                            motionBlurFrames: 1,
                            name: `${names[current_path].replace("-", " ").replace(".jpg", "")}`,
