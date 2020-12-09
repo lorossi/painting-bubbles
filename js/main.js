@@ -11,6 +11,8 @@ let auto = false;
 let current_path;
 // are we on mobile?
 let mobile = false;
+// record filetype - png or gif
+let record_filetype = "gif";
 
 // images names and dir
 const dir = "assets/paintings/";
@@ -57,6 +59,11 @@ get_canvas_size = () => {
   // update global variable
   mobile = get_css_property("--mobile");
 
+  // if recording png files, let's have a big canvas
+  if (recording && record_filetype === "png") {
+    return 1000;
+  }
+
   width = $(document).width();
   height = $(document).height();
 
@@ -86,12 +93,13 @@ let next_image = async (direction) => {
   if (recording && capturer){
     recording = false;
 
+    if (record_filetype === "gif") {
     // add waiting banner
-    let waiting = $('<div class="wait">The video is being generated, wait a while....<br>Reload the page after the download is complete!</div>');
-    $("body").append(waiting);
+      let waiting = $('<div class="wait">The video is being generated, wait a while....<br>Reload the page after the download is complete!</div>');
+      $("body").append(waiting);
 
-    await capturer.stop();
-    await capturer.save(async (blob) => {
+      await capturer.stop();
+      await capturer.save(async (blob) => {
       let filename = names[current_path].replace("-", " ").replace(".jpg", "");
 
       new Promise((resolve, reject) => {
@@ -114,8 +122,11 @@ let next_image = async (direction) => {
       $(waiting).remove();
       // re enable record
       $(".icons #record").removeClass("disabled");
-
-    });
+      });
+    } else if (record_filetype === "png") {
+      await capturer.stop();
+      await capturer.save();
+    }
   }
 
   if (current_path === undefined) {
