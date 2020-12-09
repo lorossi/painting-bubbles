@@ -320,7 +320,12 @@ class Sketch {
 
     // draw watermark
     if (recording && record_filetype === "gif") {
-      let textsize = 24;
+      let textsize;
+      if (mobile) {
+        textsize = 8;
+      } else {
+        textsize = 24;
+      }
       let border = textsize / 4;
       let textwidth;
       this.ctx.save();

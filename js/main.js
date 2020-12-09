@@ -29,6 +29,7 @@ let main = async () => {
 
   // get canvas size
   canvas_size = get_canvas_size();
+
   // load image pixels
   let pixels;
   pixels = await load_pixels(img_path, canvas_size);
@@ -67,7 +68,7 @@ get_canvas_size = () => {
   width = $(document).width();
   height = $(document).height();
 
-  for (let i = 2000; i >= 0; i -= 200) {
+  for (let i = 2000; i >= 0; i -= 50) {
     if (width > i && height > i) {
       return i;
     }
@@ -95,7 +96,7 @@ let next_image = async (direction) => {
       // we want to record only one painting
       recording = false;
       // add waiting banner
-      let waiting = $('<div class="wait">The video is being generated, wait a while....<br>Reload the page after the download is complete!</div>');
+      let waiting = $('<div class="wait">The video is being generated, wait a while....<br>The page will be reloaded after the download is ready!</div>');
       $("body").append(waiting);
 
       await capturer.stop();
@@ -120,6 +121,8 @@ let next_image = async (direction) => {
 
       // delete waiting banner
       $(waiting).remove();
+      // reload page
+      location.reload();
       // re enable record
       $(".icons #record").removeClass("disabled");
       });
