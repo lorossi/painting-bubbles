@@ -10,8 +10,6 @@ class Sketch {
     this.fps = fps || 60;
     this.fps_interval = 1000 / this.fps;
 
-    // how many circles should be selected for splitting
-    this.auto_to_keep = 50;
     // amout of split circles
     this._split_circles = 0;
     // pixels container
@@ -338,26 +336,23 @@ class Sketch {
       available_circles = this._circles.filter(c => !c.min_size);
       available_circles = available_circles.sort((a, b) => (b.r - a.r));
 
-      if (available_circles.length > 8) {
-        available_circles = available_circles.slice(0, this.auto_to_keep);
-      } else {
-        available_circles = available_circles.slice(0, 2);
-      }
-
       let iterations;
-
-      if (this._split_circles < 500) {
-        iterations = Math.floor(this._split_circles / 250);
-        iterations = iterations <= 0 ? 1 : iterations;
+      if (this._split_circles < 16) {
+        iterations = 2;
+      } else if (this._split_circles < 250) {
+        iterations = 4;
       } else if (this._split_circles < 1000) {
-        iterations = Math.floor(this._circles.length / 200);
-      } else if (this._split_circles < 2000){
-        iterations = Math.floor(this._circles.length / 150);
-      } else if (this._split_circles < 3000){
-        iterations = Math.floor(this._circles.length / 100);
+        iterations = 8;
+      } else if (this._split_circles < 4000) {
+        iterations = 16;
+      } else if (this._split_circles < 8000) {
+        iterations = 32;
+      } else if (this._split_circles < 16000) {
+        iterations = 64;
       } else {
-        iterations = Math.floor(this._circles.length / 50);
+        iterations = 256;
       }
+      available_circles = available_circles.slice(0, iterations * 4);
 
       for (let i = 0; i < iterations; i++) {
          let random_index, circles_index;
