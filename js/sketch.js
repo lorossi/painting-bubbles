@@ -18,6 +18,8 @@ class Sketch {
     this._circles = [];
     // when this is true, all circles are of minimal size
     this._ended = false;
+    // add some border while recording
+    this.record_border = 0.9;
 
     // save canvas in memory (currently unused, might delete later)
     this.savedData = new Image();
@@ -268,6 +270,12 @@ class Sketch {
     this.ctx.fillStyle = this.background;
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
+    // recording scale
+    if (recording) {
+      this.ctx.translate(this.width / 2, this.height / 2);
+      this.ctx.scale(  this.record_border, this.record_border);
+      this.ctx.translate(- this.width / 2, - this.height / 2);
+    }
     // if this is true, all circles cannot become smaller
     let all_min_size = true;
     // draw rects
