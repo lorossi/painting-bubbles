@@ -16,7 +16,7 @@ let record_filetype = "gif";
 
 // images names and dir
 const dir = "assets/paintings/";
-const names = ["american-gothic.jpg", "arnolfini-portrait.jpg", "bouilloire-et-fruits.jpg", "composition-2-with-red-blue-and-yellow.jpg", "composition-8.jpg", "crying-girl.jpg", "der-wanderer-uber-dem-nebelmeer.jpg", "el-beso.jpg", "flying-copper.jpg", "gioconda.jpg", "golconda.jpg", "great-wave.jpg", "green-line.jpeg", "green-line.jpg", "guernica.jpg", "hunters-in-the-snow.jpg", "impression-soleil-levant.jpg", "la-liberte-guidant-le-peuple.jpg", "meisje-met-de-parel.jpg", "napoleon-crossing-the-alps.jpg", "nascita-di-venere.jpg", "nighthawks.jpg", "persistence-of-memory.jpg", "rebel-with-many-causes.jpg", "skrik.jpg", "starry-night.jpg", "sunflowers.jpg", "the-kiss.jpg", "the-son-of-men.jpg", "the-tower-of-babel.jpg", "the-water-lily-pond.jpg", "un-dimanche-apres-midi-a-l-ile-de-la-grande-jatte.jpg", "vertumno.jpg"];
+const names = ["american-gothic.jpg", "arnolfini-portrait.jpg", "bouilloire-et-fruits.jpg", "composition-2-with-red-blue-and-yellow.jpg", "composition-8.jpg", "crying-girl.jpg", "der-wanderer-uber-dem-nebelmeer.jpg", "el-beso.jpg", "flying-copper.jpg", "gioconda.jpg", "golconda.jpg", "great-wave.jpg", "green-line.jpg", "guernica.jpg", "hunters-in-the-snow.jpg", "impression-soleil-levant.jpg", "la-liberte-guidant-le-peuple.jpg", "meisje-met-de-parel.jpg", "napoleon-crossing-the-alps.jpg", "nascita-di-venere.jpg", "nighthawks.jpg", "persistence-of-memory.jpg", "rebel-with-many-causes.jpg", "skrik.jpg", "starry-night.jpg", "sunflowers.jpg", "the-kiss.jpg", "the-son-of-man.jpg", "the-tower-of-babel.jpg", "the-water-lily-pond.jpg", "un-dimanche-apres-midi-a-l-ile-de-la-grande-jatte.jpg", "vertumno.jpg"];
 
 // main function
 let main = async () => {
@@ -67,8 +67,8 @@ get_canvas_size = () => {
   width = $(document).width();
   height = $(document).height();
 
-  for (let i = 1000; i >= 0; i -= 100) {
-    if (width >= i && height >= i) {
+  for (let i = 2000; i >= 0; i -= 200) {
+    if (width > i && height > i) {
       return i;
     }
   }
@@ -166,7 +166,6 @@ let next_image = async (direction) => {
 
   // fire up recorder again
   if (recording) {
-    console.log("%cRecorded painting started", "color:green;font-size:1rem;");
     setup_capturer();
   }
 
@@ -265,8 +264,9 @@ $(document).ready(() => {
       $(".icons #play").addClass("disabled");
       $(".icons #stop").removeClass("disabled");
     } else if (e.target.id === "stop") {
+      // if recording, stop and reload this image
       if (recording) {
-        next_image("this");
+        next_image("keep");
       }
       // stop button was pressed
       auto = false;

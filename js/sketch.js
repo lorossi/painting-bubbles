@@ -319,16 +319,22 @@ class Sketch {
     });
 
     // draw watermark
-    if (recording && record_filetype === "png") {
+    if (recording && record_filetype === "gif") {
       let textsize = 24;
+      let border = textsize / 4;
       let textwidth;
       this.ctx.save();
-      this.ctx.fillStyle = "#0000007f";
+      this.ctx.globalAlpha = 0.4;
+      this.ctx.strokeStyle = "#000000";
+      this.ctx.fillStyle = "#FFFFFF";
+      this.ctx.lineWidth  = 1;
       this.ctx.font = `${textsize}px AvenirRoman`;
       textwidth = this.ctx.measureText("Lorenzo Rossi").width;
-      this.ctx.fillText('Lorenzo Rossi', textwidth * 0.25, 1.25 * textsize);
+      this.ctx.strokeText('Lorenzo Rossi', border, textsize + border);
+      this.ctx.fillText('Lorenzo Rossi', border, textsize + border);
       textwidth = this.ctx.measureText("www.lorenzoros.si").width;
-      this.ctx.fillText("www.lorenzoros.si", this.width - textwidth * 1.25, this.height - 0.25 * textsize);
+      this.ctx.strokeText("www.lorenzoros.si", this.width - textwidth - border, this.height - border);
+      this.ctx.fillText("www.lorenzoros.si", this.width - textwidth - border, this.height - border);
       this.ctx.restore();
     }
     this.ctx.restore();
