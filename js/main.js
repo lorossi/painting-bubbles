@@ -91,10 +91,10 @@ resize_canvas = (width, height) => {
 // direction = "this" -> reset this
 let next_image = async (direction) => {
   if (recording && capturer){
-    recording = false;
-
     if (record_filetype === "gif") {
-    // add waiting banner
+      // we want to record only one painting
+      recording = false;
+      // add waiting banner
       let waiting = $('<div class="wait">The video is being generated, wait a while....<br>Reload the page after the download is complete!</div>');
       $("body").append(waiting);
 
@@ -127,6 +127,12 @@ let next_image = async (direction) => {
       await capturer.stop();
       await capturer.save();
     }
+  }
+
+  if (recording && current_path === names.length - 1) {
+    console.log("%cAll paintings recorded", "color:green;font-size:1rem;");
+    recording = false;
+    auto = false;
   }
 
   if (current_path === undefined) {
