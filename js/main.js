@@ -165,7 +165,7 @@ let setup_capturer = () => {
                            format: 'gif',
                            workersPath: 'js/',
                            motionBlurFrames: 1,
-                           name: `${names[current_path].replace("-", " ").replace(".jpg", "")}-${current_path+1}`,
+                           name: `${names[current_path].replace("-", " ").replace(".jpg", "")}`,
                            autoSaveTime: 30,
                            frameRate: 60
                           });
