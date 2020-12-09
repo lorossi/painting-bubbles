@@ -2,4 +2,9 @@
 *.log
 output/frames
 output/instagram
-output/gifs
+output/gifs/*
+!output/gifs/gioconda.gif
+!output/gifs/great-wave.gif
+!output/gifs/rebel-with-many-causes.gif
+!output/gifs/starry-night.gif
+!output/gifs/vertumno.gif
