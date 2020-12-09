@@ -117,21 +117,18 @@ let next_image = async (direction) => {
 
     });*/
     await capturer.save();
-
   }
 
   if (recording && current_path === names.length - 1) {
     console.log("FINISHED ALL");
-    return
+    return;
   }
 
   if (current_path === undefined) {
     current_path = 0;
   }
 
-  if (direction === undefined && recording) {
-    direction = 0;
-  } else if (direction === undefined) {
+  if (direction === undefined) {
     direction = 1;
   } else if (direction === "random") {
     direction = random(0, 100000, true);

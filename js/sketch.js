@@ -337,7 +337,6 @@ class Sketch {
       available_circles = available_circles.sort((a, b) => (b.r - a.r));
 
       let iterations;
-
       if (this._split_circles < 16) {
         iterations = 2;
       } else if (this._split_circles < 250) {
