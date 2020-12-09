@@ -13,7 +13,7 @@ temp_dir = "temp"
 instagram_dir = "instagram"
 completed = 0
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s', filename="generate-videos.log", filemode="w+")
+logging.basicConfig(level=logging.INFO, filename="generate-videos.log", filemode="w+", format='%(asctime)s %(levelname)s %(message)s')
 
 logging.info("Creating folders")
 if not os.path.exists(temp_dir):
@@ -78,12 +78,17 @@ shutil.rmtree(temp_dir)
 # create file list
 with open(f"{videos_dir}/list.txt", "w+") as list:
     files = os.listdir(videos_dir + "/")
-    file in files:
+    for file in files:
         list.write(f"file '{file}'\n")
+
 # concatenate
 options = f"ffmpeg -f concat -safe 0 -y -i {videos_dir}/list.txt -c copy -loop 0 {videos_dir}/ALL_PAINTINGS.mp4"
 subprocess.run(options.split(" "))
 logging.info("Big video created")
+
+# delete file
+os.remove(f"{videos_dir}/list.txt")
+
 # convert for Instagram
 options = f"ffmpeg -i {videos_dir}/ALL_PAINTINGS.mp4 -c:v libx265 -filter_complex fps=30 -c:a copy {instagram_dir}/ALL_PAINTINGS.mp4"
 subprocess.run(options.split(" "))
