@@ -11,6 +11,8 @@ let auto = true;
 let current_path;
 // are we on mobile?
 let mobile = false;
+// record type - gif or png
+let record_type = "png"; // WILL MERGE THIS LATER
 
 // images names and dir
 const dir = "assets/paintings/";
@@ -51,22 +53,10 @@ let main = async () => {
 
 // calculate optimal canvas size
 get_canvas_size = () => {
-  let canvas_size;
-  let width, height;
-
   // update global variable
   mobile = get_css_property("--mobile");
-
-  width = $(document).width();
-  height = $(document).height();
-
+  // this could also go higher
   return 1000;
-
-  for (let i = 1000; i >= 0; i -= 100) {
-    if (width >= i && height >= i) {
-      return i;
-    }
-  }
 };
 
 // resize canvas
