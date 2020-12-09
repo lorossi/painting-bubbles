@@ -317,19 +317,6 @@ class Sketch {
       }
     });
 
-    // draw watermark
-    if (recording && false) {
-      let textsize = 24;
-      let textwidth;
-      this.ctx.save();
-      this.ctx.fillStyle = "#0000007f";
-      this.ctx.font = `${textsize}px AvenirRoman`;
-      textwidth = this.ctx.measureText("Lorenzo Rossi").width;
-      this.ctx.fillText('Lorenzo Rossi', textwidth * 0.25, 1.25 * textsize);
-      textwidth = this.ctx.measureText("www.lorenzoros.si").width;
-      this.ctx.fillText("www.lorenzoros.si", this.width - textwidth * 1.25, this.height - 0.25 * textsize);
-      this.ctx.restore();
-    }
     this.ctx.restore();
 
     // save frame if recording
@@ -349,13 +336,13 @@ class Sketch {
         iterations = 2;
       } else if (this._split_circles < 250) {
         iterations = 4;
-      } else if (this._split_circles < 1000) {
+      } else if (this._split_circles < 2000) {
         iterations = 8;
-      } else if (this._split_circles < 4000) {
+      } else if (this._split_circles < 5000) {
         iterations = 16;
-      } else if (this._split_circles < 8000) {
+      } else if (this._split_circles < 10000) {
         iterations = 32;
-      } else if (this._split_circles < 16000) {
+      } else if (this._split_circles < 20000) {
         iterations = 64;
       } else {
         iterations = 256;

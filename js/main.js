@@ -14,7 +14,7 @@ let mobile = false;
 
 // images names and dir
 const dir = "assets/paintings/";
-const names = ["a-sunday-on-la-grande-jatte.jpg", "american-gothic.jpg", "arnolfini-portrait.jpg", "bouilloire-et-fruits.jpg", "composition-8.jpg", "crying-girl.jpg", "der-wanderer-uber-dem-nebelmeer.jpg", "el-beso.jpg", "flying-copper.jpg", "gioconda.jpg", "great-wave.jpg", "guernica.jpg", "hunters-in-the-snow.jpg", "impression-soleil-levant.jpg", "la-libert\u00e8-guidant-le-peuple.jpg", "meisje-met-de-parel.jpg", "napoleon-crossing-the-alps.jpg", "nascita-di-venere.jpg", "nighthawks.jpg", "persistence-of-memory.jpg", "piet-modrian-composition-2-with-red-blue-and-yellow.jpg", "rebel-with-many-causes.jpg", "skrik.jpg", "starry-night.jpg", "sunflowers.jpg", "the-kiss.jpg", "the-son-of-men.jpg", "the-tower-of-babel.jpg", "the-water-lily-pond.jpg"];
+const names = ["a-sunday-on-la-grande-jatte.jpg", "american-gothic.jpg", "arnolfini-portrait.jpg", "bouilloire-et-fruits.jpg", "composition-8.jpg", "crying-girl.jpg", "der-wanderer-uber-dem-nebelmeer.jpg", "el-beso.jpg", "flying-copper.jpg", "gioconda.jpg", "golconda.jpg", "great-wave.jpg", "green-line.jpg", "guernica.jpg", "hunters-in-the-snow.jpg", "impression-soleil-levant.jpg", "la-libert\u00e8-guidant-le-peuple.jpg", "meisje-met-de-parel.jpg", "napoleon-crossing-the-alps.jpg", "nascita-di-venere.jpg", "nighthawks.jpg", "persistence-of-memory.jpg", "piet-modrian-composition-2-with-red-blue-and-yellow.jpg", "rebel-with-many-causes.jpg", "skrik.jpg", "starry-night.jpg", "sunflowers.jpg", "the-kiss.jpg", "the-son-of-men.jpg", "the-tower-of-babel.jpg", "the-water-lily-pond.jpg"];
 
 // main function
 let main = async () => {
@@ -84,44 +84,14 @@ resize_canvas = (width, height) => {
 // direction = "this" -> reset this
 let next_image = async (direction) => {
   if (recording && capturer){
-    //recording = false;
-
-    // add waiting banner
-    //let waiting = $('<div class="wait">The video is being generated, wait a while....<br>Reload the page after the download is complete!</div>');
-    //$("body").append(waiting);
-
     await capturer.stop();
-    /*await capturer.save(async (blob) => {
-      let filename = names[current_path].replace("-", " ").replace(".jpg", "");
-
-      new Promise((resolve, reject) => {
-      let reader = new FileReader();
-      reader.readAsDataURL(blob);
-      reader.onload = () => {
-        // create and fill element
-        let element = $('<a class="hidden"></a>');
-        $(element).attr("href", reader.result);
-        $(element).attr("download", filename);
-        $("body").append(element);
-        $(element)[0].click("click");
-        $(element).remove();
-        resolve("image created");
-      };
-      reader.onerror = () => reject("error while creating image");
-      });
-
-      // delete waiting banner
-      $(waiting).remove();
-      // re enable record
-      $(".icons #record").removeClass("disabled");
-
-    });*/
     await capturer.save();
   }
 
   if (recording && current_path === names.length - 1) {
     console.log("FINISHED ALL");
-    return;
+    recording = false;
+    auto = false;
   }
 
   if (current_path === undefined) {
