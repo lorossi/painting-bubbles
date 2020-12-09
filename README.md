@@ -26,7 +26,7 @@ There's a feature that lets your browser record the completion of a painting in 
 *BE CAREFUL* when you use that.
 
 ## Rendered videos
-You can find some output videos on my [Instagram account](https://www.instagram.com/lorossi97/), in higher quality on [Vimeo](https://vimeo.com/489007379) or inside the *output* folder, both in gif (lower quality and framerate) and mp4 (best quality).
+You can find some output videos on my [Instagram account](https://www.instagram.com/lorossi97/), in higher quality on [Vimeo](https://vimeo.com/489007379) or inside the *output* folder.
 
 ## Examples
 Some of the produced gifs

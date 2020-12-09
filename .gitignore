@@ -1,3 +1,5 @@
 .htaccess
 *.log
 output/frames
+output/instagram
+output/gifs
