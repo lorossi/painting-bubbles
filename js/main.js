@@ -173,10 +173,10 @@ let next_image = async (direction) => {
 
 let setup_capturer = () => {
   capturer = new CCapture({
-                           format: 'gif',
+                           format: record_filetype,
                            workersPath: 'js/',
                            motionBlurFrames: 1,
-                           name: `${names[current_path].replace("-", " ").replace(".jpg", "")}`,
+                           name: `${names[current_path].replace(".jpg", "")}`,
                            autoSaveTime: 30,
                            frameRate: 60
                           });
