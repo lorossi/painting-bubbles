@@ -92,6 +92,7 @@ body {
   margin-bottom: 0.5rem;
   border-radius: 2px;
   border: 2px solid #0000007f;
+  background-color: #FFFFFF;
 }
 
 .hint, .wait {
