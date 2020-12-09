@@ -13,17 +13,28 @@ It took a while but one night where I couldn't sleep I started thinking about ho
 
 Just move your mouse (or tap, if you are on a mobile device) around. If you get bored, press *auto* to let the script complete the image or *next* to get another painting.
 
+If you feel like doing so, press *record* and wait for the rendered gif! It might take a while, tho.
+
 ## How it works
 The script loads an image from the `assets/paintings` folder and puts it in a hidden canvas. Then, it's pixels are loaded and passed into the real sketch, where they are rendered as big circles that split every time you pass the mouse (or tap) on them. Their color is the average color of the pixels under them.
 
 It's nothing too hard but it took me a while to get used to the `async` quirks of the ECMA6 language.
 
-## Recording
-There's a feature that lets your browser record the completion of a painting. It will take a long time and there's no way to stop it before completion.
-So *BE CAREFUL* when you use that.
+### Recording
+There's a feature that lets your browser record the completion of a painting in the form of a gif animation. It might take a long time, so hang tight and wait.
+
+*BE CAREFUL* when you use that.
+
+## Rendered videos
+You can find some output videos on my [Instagram account](), in higher quality on [Vimeo]() or inside the *output* folder, both in gif (lower quality and framerate) and mp4 (best quality).
 
 ## Examples
-**TODO**
+Some of the produced gifs
+![La gioconda](https://github.com/lorossi/painting-bubbles/blob/master/output/gifs/gioconda.gif?raw=true)
+![The great wave](https://github.com/lorossi/painting-bubbles/blob/master/output/gifs/great-wave.gif?raw=true)
+![Rebel with many causes](https://github.com/lorossi/painting-bubbles/blob/master/output/gifs/rebel-with-many-causes.gif?raw=true)
+![Starry night](https://github.com/lorossi/painting-bubbles/blob/master/output/gifs/starry-night.gif?raw=true)
+![Vertumno](https://github.com/lorossi/painting-bubbles/blob/master/output/gifs/vertumno.gif?raw=true)
 
 ## Credits
 Videos created using [ccapture.js by spite](https://github.com/spite/ccapture.js/) for saving frames and [FFMPEG](https://ffmpeg.org/) for rendering.
