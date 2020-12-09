@@ -1,8 +1,8 @@
 - ~Add more paintings~ **DONE**
 - Give user the option of uploading personal paintings
 - Drag and drop
-- Write README (YEAH...)
+- ~Write README (YEAH...)~ **DONE**
 - ~Option to register videos~ **DONE**
 - ~Better mobile support~ **DONE**
 - ~Add buttons interface~ **DONE**
-- Record some videos
+- ~Record some videos~ **DONE**
