@@ -70,3 +70,12 @@ let get_touch_pos = (canvas, e) => {
     y: e.targetTouches[0].clientY - rect.top
   };
 };
+
+let shuffleArray = (array) => {
+    for (let i = array.length - 1; i > 0; i--) {
+        let j = Math.floor(Math.random() * (i + 1));
+        let temp = array[i];
+        array[i] = array[j];
+        array[j] = temp;
+    }
+};

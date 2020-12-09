@@ -87,11 +87,11 @@ let next_image = async (direction) => {
     //recording = false;
 
     // add waiting banner
-    let waiting = $('<div class="wait">The video is being generated, wait a while....<br>Reload the page after the download is complete!</div>');
-    $("body").append(waiting);
+    //let waiting = $('<div class="wait">The video is being generated, wait a while....<br>Reload the page after the download is complete!</div>');
+    //$("body").append(waiting);
 
     await capturer.stop();
-    await capturer.save(async (blob) => {
+    /*await capturer.save(async (blob) => {
       let filename = names[current_path].replace("-", " ").replace(".jpg", "");
 
       new Promise((resolve, reject) => {
@@ -115,7 +115,9 @@ let next_image = async (direction) => {
       // re enable record
       $(".icons #record").removeClass("disabled");
 
-    });
+    });*/
+    await capturer.save();
+
   }
 
   if (recording && current_path === names.length - 1) {
@@ -172,7 +174,7 @@ let setup_capturer = () => {
                            format: 'png',
                            workersPath: 'js/',
                            motionBlurFrames: 1,
-                           name: `${names[current_path].replace("-", " ").replace(".jpg", "")}`,
+                           name: `${names[current_path].replace(".jpg", "")}`,
                            autoSaveTime: 30,
                            frameRate: 60
                           });
