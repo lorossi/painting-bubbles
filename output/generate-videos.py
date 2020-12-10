@@ -7,8 +7,8 @@ first_frame_duration = 1
 last_frame_duration = 5
 fps = 60
 source = "frames"
-videos_dir = "squarevideos"
-gifs_dir = "squaregifs"
+videos_dir = "square_videos"
+gifs_dir = "square_gifs"
 temp_dir = "temp"
 completed = 0
 
@@ -21,8 +21,6 @@ if not os.path.exists(gifs_dir):
     os.makedirs(gifs_dir)
 if not os.path.exists(videos_dir):
     os.makedirs(videos_dir)
-if not os.path.exists(instagram_dir):
-    os.makedirs(instagram_dir)
 
 logging.info("Listing file")
 dirs = os.listdir(source)
@@ -35,7 +33,7 @@ for dir in dirs:
     # create still of first image
     options = f"ffmpeg -y -framerate 1 -r {fps} -t {first_frame_duration} -i {source}/{dir}/{files[0]} -loop 0 {temp_dir}/temp_0.mp4"
     subprocess.run(options.split(" "))
-    logging.info("Second temp video created")
+    logging.info("First temp video created")
 
     # create video
     options = f"ffmpeg -y -r {fps} -i {source}/{dir}/%07d.png -loop 0 {temp_dir}/temp_1.mp4"
@@ -58,7 +56,7 @@ for dir in dirs:
     logging.info("Output video created")
 
     # concatenate the videos in form of gif
-    options = f"ffmpeg -y -i {videos_dir}/{dir}.mp4 -loop 0 -filter_complex fps=30,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse {gifs_dir}/{dir}.gif"
+    options = f"ffmpeg -y -i {videos_dir}/{dir}.mp4 -loop 0 -filter_complex fps=25,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse {gifs_dir}/{dir}.gif"
     subprocess.run(options.split(" "))
     logging.info("Output gif created")
 

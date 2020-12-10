@@ -12,9 +12,9 @@ class Circle {
     this._color = color;
 
     if (mobile) {
-      this.min_radius = 2;
-    } else {
       this.min_radius = 4;
+    } else {
+      this.min_radius = 2;
     }
 
     // check if the circle is already of the minimum size
@@ -75,6 +75,7 @@ class Circle {
       }
       color_string += Math.floor(channel).toString(16).padStart(2, '0');
     }
+
     return color_string;
   }
 

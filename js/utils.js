@@ -55,22 +55,43 @@ let random = (min, max, int) => {
    return random_num;
 };
 
-let get_mouse_pos = (canvas, e, dx, dy) => {
+let get_mouse_pos = (element, e, dx, dy) => {
   dx = dx || 0;
   dy = dy || 0;
-  let rect = canvas.getBoundingClientRect();
+  let rect = element.getBoundingClientRect();
   return {
     x: e.clientX - rect.left - dx,
     y: e.clientY - rect.top - dy
   };
 };
 
-let get_touch_pos = (canvas, e, dx, dy) => {
+let get_touch_pos = (element, e, dx, dy) => {
   dx = dx || 0;
   dy = dy || 0;
-  let rect = canvas.getBoundingClientRect();
+  let rect = element.getBoundingClientRect();
   return {
     x: e.targetTouches[0].clientX - rect.left - dx,
     y: e.targetTouches[0].clientY - rect.top - dy
   };
+};
+
+let constrain = (val, min, max) => {
+  if (val < min) {
+    val = min;
+  } else if (val > max) {
+    val = max;
+  }
+
+  return val;
+};
+
+let shuffleArray = (array) => {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+};
+
+let get_base_log = (x, y) => {
+  return Math.log(y) / Math.log(x);
 };

@@ -15,10 +15,11 @@ let mobile = false;
 // record filetype - png or gif
 const record_filetype = "gif";
 // do we want a square canvas? Useful if we want to publish the videos (e.g. on Instagram)
-const square_canvas = true;
-// images names and dir
+const square_canvas = false;
+// paintings folder
 const dir = "assets/paintings/";
-const names = ["american-gothic.jpg", "arnolfini-portrait.jpg", "bouilloire-et-fruits.jpg", "composition-2-with-red-blue-and-yellow.jpg", "composition-8.jpg", "crying-girl.jpg", "der-wanderer-uber-dem-nebelmeer.jpg", "el-beso.jpg", "flying-copper.jpg", "gioconda.jpg", "golconda.jpg", "great-wave.jpg", "green-line.jpg", "guernica.jpg", "hunters-in-the-snow.jpg", "impression-soleil-levant.jpg", "la-liberte-guidant-le-peuple.jpg", "meisje-met-de-parel.jpg", "napoleon-crossing-the-alps.jpg", "nascita-di-venere.jpg", "nighthawks.jpg", "persistence-of-memory.jpg", "rebel-with-many-causes.jpg", "skrik.jpg", "starry-night.jpg", "sunflowers.jpg", "the-kiss.jpg", "the-son-of-man.jpg", "the-tower-of-babel.jpg", "the-water-lily-pond.jpg", "un-dimanche-apres-midi-a-l-ile-de-la-grande-jatte.jpg", "vertumno.jpg"];
+// paintings filenames, currently we have 40 paintings
+const names = ["american-gothic.jpg", "arnolfini-portrait.jpg", "bouilloire-et-fruits.jpg", "composition-2-with-red-blue-and-yellow.jpg", "composition-8.jpg", "crying-girl.jpg", "dama-con-ermellino.jpg", "der-wanderer-uber-dem-nebelmeer.jpg", "el-beso.jpg", "flying-copper.jpg", "gioconda.jpg", "golconda.jpg", "great-wave.jpg", "green-line.jpg", "hunters-in-the-snow.jpg", "impression-soleil-levant.jpg", "la-liberte-guidant-le-peuple.jpg", "meisje-met-de-parel.jpg", "morte-e-vita.jpg", "napoleon-crossing-the-alps.jpg", "nascita-di-venere.jpg", "netherlandish-proverbs.jpg", "nighthawks.jpg", "pathway-in-monet-s-garden-at-giverny.jpg", "persistence-of-memory.jpg", "primavera.jpg", "rebel-with-many-causes.jpg", "skrik.jpg", "squisito-al-seltz.jpg", "starry-night.jpg", "sunflowers.jpg", "the-kiss.jpg", "the-ninth-wave.jpg", "the-son-of-man.jpg", "the-tower-of-babel.jpg", "the-water-lily-pond.jpg", "trionfo-di-galatea.jpg", "un-dimanche-apres-midi-a-l-ile-de-la-grande-jatte.jpg", "vertumno.jpg", "water-lilies-evening-effectjpg.jpg"];
 
 // main function
 let main = async () => {
@@ -72,7 +73,7 @@ get_canvas_size = () => {
 
   // if recording png files, let's have a big canvas
   if (recording && record_filetype === "png") {
-    return 1000;
+    return 1200;
   }
 
   // otherwise, let's make the biggest canvas that will fit in the screen

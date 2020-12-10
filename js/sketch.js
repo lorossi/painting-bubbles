@@ -174,6 +174,7 @@ class Sketch {
         nwidth = pos.width / 2;
         nheight = pos.height;
       }
+
       let average_color = this.averageColor(nx, ny, nwidth, nheight, true);
       let new_circle = new Circle(nx, ny, nwidth, nheight, average_color, next_split_direction);
       this._circles.push(new_circle);
@@ -233,7 +234,7 @@ class Sketch {
     this.then = performance.now();
   }
 
-  draw(e) {
+  draw() {
     // time elapsed since last frame was rendered
     if (!recording) {
       let diff;
@@ -249,8 +250,8 @@ class Sketch {
       // load the next frame
       window.requestAnimationFrame(this.draw.bind(this));
     } else if (this._ended && recording) {
-        // if in auto or recording, load another image
-        // if recording, stop and save
+      // if in auto or recording, load another image
+      // if recording, stop and save
       next_image();
       return;
       // otherwise, the user has to do so manually
@@ -271,6 +272,12 @@ class Sketch {
       set_css_property("--background-color", this.background);
       // create a favicon with the same color
       this.createFavicon(this.background);
+    } else {
+      // check if this is the last frame that will be drawn
+      let available_circles = this._circles.filter(c => !c.min_size);
+      if (available_circles.length == 0) {
+          this._ended = true;
+      }
     }
 
     this.ctx.save();
@@ -290,8 +297,6 @@ class Sketch {
     // compensate for offset
     this.ctx.translate(this.dx, this.dy);
 
-    // if this is true, all circles cannot become smaller
-    let all_min_size = true;
     // draw rects
     // shadow
     this.ctx.shadowColor = get_css_property("--shadow-color");
@@ -325,10 +330,6 @@ class Sketch {
       this.ctx.arc(circle_pos.cx, circle_pos.cy, circle_pos.r, 0, 2 * Math.PI);
       this.ctx.fill();
       this.ctx.restore();
-
-      if (all_min_size && !c.min_size) {
-        all_min_size = false;
-      }
     });
 
     // draw watermark
@@ -363,48 +364,48 @@ class Sketch {
     }
 
     // if the sketch is in auto mode, pop a circle
-    if ((auto || recording) && !all_min_size) {
+    if ((auto || recording ) && !this.ended) {
       // circles big enough to be split
       let available_circles;
       available_circles = this._circles.filter(c => !c.min_size);
       available_circles = available_circles.sort((a, b) => (b.r - a.r));
 
+      // how many circles should be split at each frame?
       let iterations;
-      if (this._split_circles < 16) {
-        iterations = 2;
-      } else if (this._split_circles < 250) {
-        iterations = 4;
-      } else if (this._split_circles < 1000) {
-        iterations = 8;
-      } else if (this._split_circles < 4000) {
-        iterations = 16;
-      } else if (this._split_circles < 8000) {
-        iterations = 32;
-      } else if (this._split_circles < 16000) {
-        iterations = 64;
-      } else {
-        iterations = 256;
-      }
-      available_circles = available_circles.slice(0, iterations * 4);
+      iterations = Math.floor(Math.pow(Math.floor(this._split_circles / 350), 1.4));
+      iterations = constrain(iterations, 2, 384);
 
-      for (let i = 0; i < iterations; i++) {
-         let random_index, circles_index;
-          random_index = random(0, available_circles.length - 1, true);
-          circles_index = this._circles.indexOf(available_circles[random_index]);
-          if (circles_index === -1) {
-            // this should not happen...
-            continue;
-          }
-          this.splitCircle(circles_index);
-          this._split_circles++;
+      // don't keep all to prevent too much size diversity on the screen
+      available_circles = available_circles.slice(0, iterations * 4);
+      // shuffle to give a little bit of randomness
+      shuffleArray(available_circles);
+
+      // iterate and split the circles
+      for (let i = 0; i < iterations && available_circles.length > 0; i++) {
+        let random_index, circles_index;
+
+        // select a random circle
+        random_index = random(0, available_circles.length - 1, true);
+        // find its index in the _circles array
+        circles_index = this._circles.findIndex(c => {
+          let random_pos;
+          random_pos = available_circles[random_index].pos;
+          return(c.pos.x === random_pos.x && c.pos.y === random_pos.y && !c.min_size);
+        });
+
+        if (circles_index === -1) {
+          // this should not happen
+          // but will eventually happend towards the end where many circles are small
+          continue;
+        }
+
+        // split it
+        this.splitCircle(circles_index);
+        // update count
+        this._split_circles++;
         }
       }
 
-    // all the circles are small!
-    if (all_min_size && !this._ended) {
-      // the sketch has ended
-      this._ended = true;
-    }
   }
 
   get pixels() {
