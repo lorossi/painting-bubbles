@@ -7,10 +7,9 @@ first_frame_duration = 1
 last_frame_duration = 5
 fps = 60
 source = "frames"
-videos_dir = "videos"
-gifs_dir = "gifs"
+videos_dir = "squarevideos"
+gifs_dir = "squaregifs"
 temp_dir = "temp"
-instagram_dir = "instagram"
 completed = 0
 
 logging.basicConfig(level=logging.INFO, filename="generate-videos.log", filemode="w+", format='%(asctime)s %(levelname)s %(message)s')
@@ -63,35 +62,9 @@ for dir in dirs:
     subprocess.run(options.split(" "))
     logging.info("Output gif created")
 
-    # create instagram compatible video
-    options = f"ffmpeg -i {videos_dir}/{dir}.mp4 -c:v libx265 -filter_complex fps=30 -c:a copy {instagram_dir}/{dir}.mp4"
-    subprocess.run(options.split(" "))
-    logging.info("Output Instagram video created")
-
     logging.info(f"Completed folder {dir}! Folder {completed + 1}/{len(dirs)}")
     completed += 1
 
 logging.info("Removing temp folder")
 shutil.rmtree(temp_dir)
-
-# concatenate ALL videos
-# create file list
-with open(f"{videos_dir}/list.txt", "w+") as list:
-    files = os.listdir(videos_dir + "/")
-    for file in files:
-        list.write(f"file '{file}'\n")
-
-# concatenate
-options = f"ffmpeg -f concat -safe 0 -y -i {videos_dir}/list.txt -c copy -loop 0 {videos_dir}/ALL_PAINTINGS.mp4"
-subprocess.run(options.split(" "))
-logging.info("Big video created")
-
-# delete file
-os.remove(f"{videos_dir}/list.txt")
-
-# convert for Instagram
-options = f"ffmpeg -i {videos_dir}/ALL_PAINTINGS.mp4 -c:v libx265 -filter_complex fps=30 -c:a copy {instagram_dir}/ALL_PAINTINGS.mp4"
-subprocess.run(options.split(" "))
-logging.info("Big video for Instagram created")
-
 logging.info("Everything completed")
