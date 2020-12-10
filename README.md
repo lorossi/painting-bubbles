@@ -28,14 +28,14 @@ There's a feature that lets your browser record the completion of a painting in 
 ## Rendered videos
 You can find some output videos on my [Instagram account](https://www.instagram.com/lorossi97/), in higher quality on [Vimeo](https://vimeo.com/489007379) or inside the *output* folder.
 <div style="display:flex;justify-content:space-around;align-items:center">
-  ![](https://github.com/lorossi/painting-bubbles/blob/master/output/square_gifs/great_wave.gif?raw=true)
-  ![](https://github.com/lorossi/painting-bubbles/blob/master/output/square_gifs/napoleon-crossing-the-alps.gif?raw=true)
-  ![](https://github.com/lorossi/painting-bubbles/blob/master/output/square_gifs/squisito-al-seltz.gif?raw=true)
+  ![great_wave](https://github.com/lorossi/painting-bubbles/blob/master/output/square_gifs/great_wave.gif?raw=true)
+  ![napoleon-crossing-the-alps](https://github.com/lorossi/painting-bubbles/blob/master/output/square_gifs/napoleon-crossing-the-alps.gif?raw=true)
+  ![squisito-al-seltz](https://github.com/lorossi/painting-bubbles/blob/master/output/square_gifs/squisito-al-seltz.gif?raw=true)
 </div>
 <div style="display:flex;justify-content:space-around;align-items:center">
-  ![](https://github.com/lorossi/painting-bubbles/blob/master/output/square_gifs/starry-night.gif?raw=true)
-  ![](https://github.com/lorossi/painting-bubbles/blob/master/output/square_gifs/the-son-of-man.gif?raw=true)
-  ![](https://github.com/lorossi/painting-bubbles/blob/master/output/square_gifs/vertumno.gif?raw=true)
+  ![starry-night](https://github.com/lorossi/painting-bubbles/blob/master/output/square_gifs/starry-night.gif?raw=true)
+  ![the-son-of-man](https://github.com/lorossi/painting-bubbles/blob/master/output/square_gifs/the-son-of-man.gif?raw=true)
+  ![vertumno](https://github.com/lorossi/painting-bubbles/blob/master/output/square_gifs/vertumno.gif?raw=true)
 </div>
 
 
