@@ -3,10 +3,11 @@
 output/frames
 output/instagram
 output/temp
-
+output/*videos/*all*
 output/*gifs/*
-!output/*gifs/gioconda.gif
+!output/*gifs/the-son-of-man.gif
 !output/*gifs/great-wave.gif
-!output/*gifs/rebel-with-many-causes.gif
+!output/*gifs/napoleon-crossing-the-alps.gif
 !output/*gifs/vertumno.gif
 !output/*gifs/starry-night.gif
+!output/*gifs/squisito-al-seltz.gif
