@@ -55,18 +55,22 @@ let random = (min, max, int) => {
    return random_num;
 };
 
-let get_mouse_pos = (canvas, e) => {
-    let rect = canvas.getBoundingClientRect();
-    return {
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top
-    };
-};
-
-let get_touch_pos = (canvas, e) => {
+let get_mouse_pos = (canvas, e, dx, dy) => {
+  dx = dx || 0;
+  dy = dy || 0;
   let rect = canvas.getBoundingClientRect();
   return {
-    x: e.targetTouches[0].clientX - rect.left,
-    y: e.targetTouches[0].clientY - rect.top
+    x: e.clientX - rect.left - dx,
+    y: e.clientY - rect.top - dy
+  };
+};
+
+let get_touch_pos = (canvas, e, dx, dy) => {
+  dx = dx || 0;
+  dy = dy || 0;
+  let rect = canvas.getBoundingClientRect();
+  return {
+    x: e.targetTouches[0].clientX - rect.left - dx,
+    y: e.targetTouches[0].clientY - rect.top - dy
   };
 };

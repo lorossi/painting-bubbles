@@ -11,9 +11,11 @@ let auto = false;
 let current_path;
 // are we on mobile?
 let mobile = false;
-// record filetype - png or gif
-let record_filetype = "gif";
 
+// record filetype - png or gif
+const record_filetype = "gif";
+// do we want a square canvas? Useful if we want to publish the videos (e.g. on Instagram)
+const square_canvas = true;
 // images names and dir
 const dir = "assets/paintings/";
 const names = ["american-gothic.jpg", "arnolfini-portrait.jpg", "bouilloire-et-fruits.jpg", "composition-2-with-red-blue-and-yellow.jpg", "composition-8.jpg", "crying-girl.jpg", "der-wanderer-uber-dem-nebelmeer.jpg", "el-beso.jpg", "flying-copper.jpg", "gioconda.jpg", "golconda.jpg", "great-wave.jpg", "green-line.jpg", "guernica.jpg", "hunters-in-the-snow.jpg", "impression-soleil-levant.jpg", "la-liberte-guidant-le-peuple.jpg", "meisje-met-de-parel.jpg", "napoleon-crossing-the-alps.jpg", "nascita-di-venere.jpg", "nighthawks.jpg", "persistence-of-memory.jpg", "rebel-with-many-causes.jpg", "skrik.jpg", "starry-night.jpg", "sunflowers.jpg", "the-kiss.jpg", "the-son-of-man.jpg", "the-tower-of-babel.jpg", "the-water-lily-pond.jpg", "un-dimanche-apres-midi-a-l-ile-de-la-grande-jatte.jpg", "vertumno.jpg"];
@@ -33,7 +35,14 @@ let main = async () => {
   // load image pixels
   let pixels;
   pixels = await load_pixels(img_path, canvas_size);
-  resize_canvas(pixels.width, pixels.height);
+
+  if (square_canvas) {
+    // we want a square canvas, so there's no need to resize it
+    // one of the two dimensions is already fixed, we just need to calculate an offset
+    resize_canvas(canvas_size, canvas_size);
+  } else {
+    resize_canvas(pixels.width, pixels.height);
+  }
 
   if (recording) {
     // fire up the capturer
@@ -48,6 +57,7 @@ let main = async () => {
     ctx = canvas.getContext("2d", {alpha: false});
     sketch = new Sketch(canvas, ctx, 60);
     sketch.pixels = pixels.data;
+    sketch.calculateOffset(pixels.width, pixels.height);
     sketch.run();
   }
 };
@@ -65,6 +75,7 @@ get_canvas_size = () => {
     return 1000;
   }
 
+  // otherwise, let's make the biggest canvas that will fit in the screen
   width = $(document).width();
   height = $(document).height();
 
@@ -96,7 +107,7 @@ let next_image = async (direction) => {
       // we want to record only one painting
       recording = false;
       // add waiting banner
-      let waiting = $('<div class="wait">The video is being generated, wait a while....<br>The page will be reloaded after the download is ready!</div>');
+      let waiting = $('<div class="wait">The video is being generated, wait a while....</div>');
       $("body").append(waiting);
 
       await capturer.stop();
@@ -121,10 +132,13 @@ let next_image = async (direction) => {
 
       // delete waiting banner
       $(waiting).remove();
-      // reload page
-      location.reload();
-      // re enable record
-      $(".icons #record").removeClass("disabled");
+
+      // update waiting banner
+      waiting = $('<div class="wait">The download has started! Reload the page when ready!</div>');
+      $("body").append(waiting);
+
+      // disable all buttons
+      $(".icons *").addClass("disabled");
       });
     } else if (record_filetype === "png") {
       await capturer.stop();
@@ -154,23 +168,28 @@ let next_image = async (direction) => {
   current_path = (current_path + direction) % names.length;
   img_path = dir + names[current_path];
   // get canvas size
-  canvas_size = get_canvas_size();
+  let canvas_size = get_canvas_size();
 
   if (sketch) {
     // load pixels
     let pixels;
     pixels = await load_pixels(img_path, canvas_size);
-    // resize the canvas to match the new image
-    resize_canvas(pixels.width, pixels.height);
-    sketch.resized();
+    if (square_canvas) {
+      resize_canvas(canvas_size, canvas_size);
+    } else {
+      // resize the canvas to match the new image
+      resize_canvas(pixels.width, pixels.height);
+    }
 
+    sketch.resized();
+    sketch.calculateOffset(pixels.width, pixels.height);
     // put pixels inside sketch
     sketch.pixels = pixels.data;
 
-  // fire up recorder again
-  if (recording) {
-    setup_capturer();
-  }
+    // fire up recorder again
+    if (recording) {
+      setup_capturer();
+    }
 
     // reset sketch
     sketch.reset();

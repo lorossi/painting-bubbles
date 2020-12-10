@@ -7,9 +7,12 @@ class Sketch {
     this.width = canvas.width;
     this.height = canvas.height;
 
+    // limit fps
     this.fps = fps || 60;
     this.fps_interval = 1000 / this.fps;
-
+    // original canvas size
+    this.original_width = this.width;
+    this.original_height = this.height;
     // amout of split circles
     this._split_circles = 0;
     // pixels container
@@ -44,6 +47,13 @@ class Sketch {
         $(hint_div).hide().fadeIn(1000);
       }, 2000);
     }
+  }
+
+  calculateOffset(width, height) {
+    this.original_width = width;
+    this.original_height = height;
+    this.dx = Math.round((this.width - width) / 2);
+    this.dy =  Math.round((this.height - height) / 2);
   }
 
   run() {
@@ -88,7 +98,7 @@ class Sketch {
     if (recording) return;
 
     let mouse_coords;
-    mouse_coords = get_mouse_pos(this.canvas, e);
+    mouse_coords = get_mouse_pos(this.canvas, e, this.dx, this.dy);
     this.searchCircle(mouse_coords.x, mouse_coords.y);
   }
 
@@ -96,12 +106,12 @@ class Sketch {
     if (recording) return;
 
     let touch_coords;
-    touch_coords = get_touch_pos(this.canvas, e);
+    touch_coords = get_touch_pos(this.canvas, e, this.dx, this.dy);
     this.searchCircle(touch_coords.x, touch_coords.y);
   }
 
   searchCircle(x, y) {
-    if (x < 0 || x > this.width || y < 0 || y > this.height) return;
+    if (x < 0 || x > this.original_width || y < 0 || y > this.original_height) return;
 
     let found, pos, i;
     found = false;
@@ -172,7 +182,7 @@ class Sketch {
 
   getPixel(x, y) {
     let index, pixel;
-    index = y * this.width * 4 + x * 4;
+    index = y * this.original_width * 4 + x * 4;
     pixel = [];
     for (let i = 0; i < 4; i++) {
       pixel.push(this._pixels[index+i]);
@@ -209,7 +219,7 @@ class Sketch {
   }
 
   averageSource() {
-    return this.averageColor(0, 0, this.width, this.height);
+    return this.averageColor(0, 0, this.original_width, this.original_height);
   }
 
   setup() {
@@ -254,7 +264,7 @@ class Sketch {
       // compute average image color
       let average_color = this.averageSource();
       //create a new rect
-      let new_circle = new Circle(0, 0, this.width, this.height , average_color);
+      let new_circle = new Circle(0, 0, this.original_width, this.original_height , average_color);
       this._circles.push(new_circle);
       // the background color is now the color of the rect, not only for canvas but for the whole page
       this.background = new_circle.color;
@@ -276,6 +286,9 @@ class Sketch {
       this.ctx.scale(this.record_border, this.record_border);
       this.ctx.translate(-this.width/2, -this.height/2);
     }
+
+    // compensate for offset
+    this.ctx.translate(this.dx, this.dy);
 
     // if this is true, all circles cannot become smaller
     let all_min_size = true;
@@ -338,8 +351,8 @@ class Sketch {
       this.ctx.strokeText('Lorenzo Rossi', border, textsize + border);
       this.ctx.fillText('Lorenzo Rossi', border, textsize + border);
       textwidth = this.ctx.measureText("www.lorenzoros.si").width;
-      this.ctx.strokeText("www.lorenzoros.si", this.width - textwidth - border, this.height - border);
-      this.ctx.fillText("www.lorenzoros.si", this.width - textwidth - border, this.height - border);
+      this.ctx.strokeText("www.lorenzoros.si", this.original_width - textwidth - border, this.original_height - border);
+      this.ctx.fillText("www.lorenzoros.si", this.original_width - textwidth - border, this.original_height - border);
       this.ctx.restore();
     }
     this.ctx.restore();
