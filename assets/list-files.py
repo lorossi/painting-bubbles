@@ -9,4 +9,6 @@ import random
 
 images = os.listdir("paintings/")
 js_variable = f"const names = {json.dumps(images)};"
+print('const dir = "assets/paintings/";')
 print(js_variable)
+print()
