@@ -12,7 +12,7 @@ It took a while but one night where I couldn't sleep I started thinking about ho
 
 *How do I use it?*
 
-Just move your mouse (or tap, if you are on a mobile device" width=300 height=300></img> around. If you get bored, press *auto* to let the script complete the image or *next* to get another painting.
+Just move your mouse (or tap, if you are on a mobile device) around. If you get bored, press *auto* to let the script complete the image or *next* to get another painting.
 
 If you feel like doing so, press *record* and wait for the rendered gif! It might take a while, tho.
 
@@ -31,12 +31,12 @@ You can find some output videos on my [Instagram account](https://www.instagram.
 
 If you are really impatient, just scroll down.
 
-<img src="https://github.com/lorossi/painting-bubbles/blob/master/output/square_gifs/great_wave.gif?raw=true" width=300 height=300></img>
-<img src="https://github.com/lorossi/painting-bubbles/blob/master/output/square_gifs/napoleon-crossing-the-alps.gif?raw=true" width=300 height=300></img>
-<img src="https://github.com/lorossi/painting-bubbles/blob/master/output/square_gifs/squisito-al-seltz.gif?raw=true" width=300 height=300></img>
-<img src="https://github.com/lorossi/painting-bubbles/blob/master/output/square_gifs/starry-night.gif?raw=true" width=300 height=300></img>
-<img src="https://github.com/lorossi/painting-bubbles/blob/master/output/square_gifs/the-son-of-man.gif?raw=true" width=300 height=300></img>
-<img src="https://github.com/lorossi/painting-bubbles/blob/master/output/square_gifs/vertumno.gif?raw=true" width=300 height=300></img>
+<img src="https://github.com/lorossi/painting-bubbles/blob/master/output/square_gifs/great-wave.gif?raw=true"width=400 height=400></img>
+<img src="https://github.com/lorossi/painting-bubbles/blob/master/output/square_gifs/napoleon-crossing-the-alps.gif?raw=true"width=400 height=400></img>
+<img src="https://github.com/lorossi/painting-bubbles/blob/master/output/square_gifs/squisito-al-seltz.gif?raw=true"width=400 height=400></img>
+<img src="https://github.com/lorossi/painting-bubbles/blob/master/output/square_gifs/starry-night.gif?raw=true"width=400 height=400></img>
+<img src="https://github.com/lorossi/painting-bubbles/blob/master/output/square_gifs/the-son-of-man.gif?raw=true"width=400 height=400></img>
+<img src="https://github.com/lorossi/painting-bubbles/blob/master/output/square_gifs/vertumno.gif?raw=true"width=400 height=400></img>
 
 ## Credits
 Videos created using [ccapture.js by spite](https://github.com/spite/ccapture.js/) for saving frames and [FFMPEG](https://ffmpeg.org/) for rendering.
