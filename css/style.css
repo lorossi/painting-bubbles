@@ -78,7 +78,6 @@ body {
   position: absolute;
   left: 2vw;
   top: 0;
-  opacity: 0.5;
   text-align: center;
   font-size: 2rem;
   text-shadow: 1px 1px 0px var(--text-shadow-color);
